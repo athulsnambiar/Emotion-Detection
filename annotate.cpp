@@ -85,10 +85,10 @@ int getAllAttributes(int noOfFaces,int emotion)
 	if(!infile.good())
 	{
 		for(i = 0; i < 68;i++)
-			for(j = 0; j < 68;j++)
+			for(j = 0; j < i;j++)
 				if(i!=j)
 					outfile<<"lena"<<i<<"b"<<j<<","<<"a"<<i<<"b"<<j<<",";
-		outfile<<"emotion,\n";
+		outfile<<"emotion\n";
 	}
 	
 	for(i = 0; i < faceNumber; i++)
@@ -96,7 +96,6 @@ int getAllAttributes(int noOfFaces,int emotion)
 		array2d<rgb_pixel> img;
 		s.str("");
 		s<<"face"<<(i)<<".jpg";
-//		Mat cvimg = imread(s.str(),1);
 		load_image(img,s.str());
 		
 		
@@ -110,7 +109,7 @@ int getAllAttributes(int noOfFaces,int emotion)
 			for(int k = 0; k < j; k++)
 				outfile<<length(feature.part(j),feature.part(k))<<","<<slope(feature.part(j),feature.part(k))<<",";
 		
-		outfile<<emotion<<",\n";
+		outfile<<emotion<<"\n";
 	}
 	outfile.close();
 	infile.close();
@@ -160,7 +159,6 @@ int main(int argc,char **argv)
 	cout<<"\n\nProgram Started\n\n";
 	for(int i = 2;i < argc; i++)
 		noOfFaces += detectFaceAndCrop(argv[i]);
-	//getEyes(noOfFaces,(int)(argv[1][0]-'0'));
 	getAllAttributes(noOfFaces,(int)(argv[1][0]-'0'));
 	return 0;
 }
