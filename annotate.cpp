@@ -18,6 +18,15 @@
 #define SURPRISE	2
 #define ANGRY		3
 
+using namespace std;
+using namespace dlib;
+using namespace cv;
+
+
+
+
+
+
 string shapeFileName = "./data/shape_predictor_68_face_landmarks.dat";
 shape_predictor sp;
 int faceNumber = 0;
