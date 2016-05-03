@@ -13,5 +13,5 @@ link_directories("${CMAKE_BINARY_DIR}/res")
 
 find_package( OpenCV REQUIRED )
 add_executable( annotate.exe annotate.cpp )
-target_link_libraries(train.exe ${OpenCV_LIBS} dlib)
+target_link_libraries( annotate.exe ${OpenCV_LIBS} dlib)
 
