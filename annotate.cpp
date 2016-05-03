@@ -139,3 +139,20 @@ double slope(point a,point b)
 	else
 		return atan(double(y1-y2))/(x1-x2);
 }
+
+int main(int argc,char **argv)
+{
+	int noOfFaces = 0;
+	if(argc < 3)
+	{
+		printf("\n\n!!Arguments not Given properly!!\n\n");
+	}
+	deserialize(shapeFileName) >> sp;
+	cout<<"\n\nProgram Started\n\n";
+	for(int i = 2;i < argc; i++)
+		noOfFaces += detectFaceAndCrop(argv[i]);
+	//getEyes(noOfFaces,(int)(argv[1][0]-'0'));
+	getAllAttributes(noOfFaces,(int)(argv[1][0]-'0'));
+	return 0;
+}
+
