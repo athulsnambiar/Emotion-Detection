@@ -26,3 +26,28 @@
 *.exe
 *.out
 *.app
+
+#Backup Files from Gedit
+*~
+
+#Images
+*.jpg
+*.png
+*.bmp
+
+#data files
+*.dat
+
+#Make and Cmake files and folders
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+dlib_build/
+
+#Training folders
+Happy
+Sad
+
+#database
+*.csv
