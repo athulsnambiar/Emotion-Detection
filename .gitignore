@@ -48,6 +48,9 @@ dlib_build/
 #Training folders
 Happy
 Sad
+Surprise
+Disgust
+Anger
 
 #database
 *.csv
