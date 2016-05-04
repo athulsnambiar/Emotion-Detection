@@ -21,9 +21,10 @@ using namespace cv;
 
 typedef matrix<double,4556,1> sample_type;
 
-vector<vector <float> > getAttributesCSV(char * name);
+std::vector<std::vector <float> > getAttributesCSV(char * name);
 bool rowsAndCols(char *name,int &row,int &col);
-vector <int> getLabelsCSV(char * name);
+std::vector <int> getLabelsCSV(char * name);
+void generateData(std::vector<sample_type>& samples,std::vector<double>& labels);
 
 
 
@@ -62,7 +63,7 @@ bool rowsAndCols(char *name,int &row,int &col)
 
 
 
-vector <int> getLabelsCSV(char * name)
+std::vector <int> getLabelsCSV(char * name)
 {
 
 	std::ifstream  file(name);
@@ -70,7 +71,7 @@ vector <int> getLabelsCSV(char * name)
 	int row,col,r,c;
 	rowsAndCols(name,row,col);
 	std::string line;
-	vector<int> labels;
+	std::vector<int> labels;
 	
 	for(r = 0; r < row; r++)
 	{
@@ -95,7 +96,7 @@ vector <int> getLabelsCSV(char * name)
 }
 
 
-vector<vector <float> > getAttributesCSV(char * name)
+std::vector<std::vector <float> > getAttributesCSV(char * name)
 {
 
 	std::ifstream  file(name);
@@ -103,13 +104,13 @@ vector<vector <float> > getAttributesCSV(char * name)
 	int row,col,r,c;
 	rowsAndCols(name,row,col);
 	std::string line;
-	vector<vector <float> > Matrix;
+	std::vector< std::vector <float> > Matrix;
 	
 	for(r = 0; r < row; r++)
 	{
 		getline(file,line);
 		stringstream lineStream(line);
-		vector <float> row1;
+		std::vector <float> row1;
 		string cell;
 		if(r == 0)
 			continue;
@@ -131,8 +132,8 @@ vector<vector <float> > getAttributesCSV(char * name)
 
 void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 {
-	vector<vector <float> > matrix = getAttributesCSV("points.csv");
-	vector <int> matLabel = getLabelsCSV("points.csv");
+		std::vector<std::vector <float> > matrix = getAttributesCSV("points.csv");
+	std::vector <int> matLabel = getLabelsCSV("points.csv");
 	sample_type temp;
 	
 	
@@ -143,7 +144,10 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 			temp(j) = matrix[i][j];
 		}
 		samples.push_back(temp);
-		labels.push_back(matLabel[i]);
+		if(matLabel[i] == 0)
+			labels.push_back(+1);
+		if(matLabel[i] == 1)
+			labels.push_back(-1);
 	}
 }
 
@@ -152,11 +156,84 @@ int main()
 	try
 	{
 		std::vector<sample_type> samples;
-        std::vector<double> labels;
-        
-        generate_data(samples, labels);
+		std::vector<double> labels;
+		
+		generateData(samples, labels);
 
-        cout << "samples.size(): "<< samples.size() << endl;
+		cout << "samples.size(): "<< samples.size() << endl;
+		
+		typedef radial_basis_kernel<sample_type> kernel_type;
+		
+		vector_normalizer<sample_type> normalizer;
+		
+		normalizer.train(samples);
+		
+		for (unsigned long i = 0; i < samples.size(); ++i)
+		samples[i] = normalizer(samples[i]);
+		
+		randomize_samples(samples, labels);
+		
+		const double max_nu = maximum_nu(labels);
+		
+		svm_nu_trainer<kernel_type> trainer;
+		
+		cout << "doing cross validation" << endl;
+		for (double gamma = 0.00001; gamma <= 1; gamma *= 5)
+		{
+			for (double nu = 0.00001; nu < max_nu; nu *= 5)
+			{
+				// tell the trainer the parameters we want to use
+				trainer.set_kernel(kernel_type(gamma));
+				trainer.set_nu(nu);
+	
+				cout << "gamma: " << gamma << "	nu: " << nu;
+	
+				cout << "	 cross validation accuracy: " << cross_validate_trainer(trainer, samples, labels, 3);
+			}
+		}
+		
+	trainer.set_kernel(kernel_type(1e-5));
+	trainer.set_nu(0.03125);
+	typedef decision_function<kernel_type> dec_funct_type;
+	typedef normalized_function<dec_funct_type> funct_type;
+	
+	funct_type learned_function;
+	learned_function.normalizer = normalizer;
+	learned_function.function = trainer.train(samples, labels);
+	
+	cout << "\nnumber of support vectors in our learned_function is " 
+		 << learned_function.function.basis_vectors.size() << endl;
+		 
+	typedef probabilistic_decision_function<kernel_type> probabilistic_funct_type;  
+	typedef normalized_function<probabilistic_funct_type> pfunct_type;
+
+	pfunct_type learned_pfunct; 
+	learned_pfunct.normalizer = normalizer;
+	learned_pfunct.function = train_probabilistic_decision_function(trainer, samples, labels, 3);
+	
+	cout << "\nnumber of support vectors in our learned_pfunct is "<< learned_pfunct.function.decision_funct.basis_vectors.size() << endl;
+	serialize("saved_function.dat") << learned_pfunct;
+	
+		cout << "\ncross validation accuracy with only 10 support vectors: " 
+		 << cross_validate_trainer(reduced2(trainer,10), samples, labels, 3);
+
+	// Let's print out the original cross validation score too for comparison.
+	cout << "cross validation accuracy with all the original support vectors: " 
+		 << cross_validate_trainer(trainer, samples, labels, 3);
+
+	// When you run this program you should see that, for this problem, you can reduce the
+	// number of basis vectors down to 10 without hurting the cross validation accuracy. 
+
+
+	// To get the reduced decision function out we would just do this:
+	learned_function.function = reduced2(trainer,10).train(samples, labels);
+	// And similarly for the probabilistic_decision_function: 
+	learned_pfunct.function = train_probabilistic_decision_function(reduced2(trainer,10), samples, labels, 3);
+	}
+		
+	catch (std::exception& e)
+	{
+		cout << "exception thrown!" << endl;
+		cout << e.what() << endl;
 	}
 }
-
