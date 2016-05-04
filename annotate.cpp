@@ -93,7 +93,7 @@ int getAllAttributes(int noOfFaces,int emotion)
 		s.str("");
 		s<<"face"<<(i)<<".jpg";
 		load_image(img,s.str());
-		
+		cout<<"image "<<(i+1)<<"\n";
 		
 		std::vector<dlib::rectangle> faceRectangles = detector(img);
 	
@@ -154,7 +154,10 @@ int main(int argc,char **argv)
 	deserialize(shapeFileName) >> sp;
 	cout<<"\n\nProgram Started\n\n";
 	for(int i = 2;i < argc; i++)
+	{
 		noOfFaces += detectFaceAndCrop(argv[i]);
+		cout<<"image "<<(i-1)<<"\n";
+	}
 	getAllAttributes(noOfFaces,(int)(argv[1][0]-'0'));
 	return 0;
 }
