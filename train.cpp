@@ -182,7 +182,6 @@ int main()
 		{
 			for (double nu = 0.00001; nu < max_nu; nu *= 5)
 			{
-				// tell the trainer the parameters we want to use
 				trainer.set_kernel(kernel_type(gamma));
 				trainer.set_nu(nu);
 	
@@ -212,22 +211,17 @@ int main()
 	learned_pfunct.function = train_probabilistic_decision_function(trainer, samples, labels, 3);
 	
 	cout << "\nnumber of support vectors in our learned_pfunct is "<< learned_pfunct.function.decision_funct.basis_vectors.size() << endl;
-	serialize("saved_function.dat") << learned_pfunct;
+	serialize("emotion_predictor_data.dat") << learned_pfunct;
 	
 		cout << "\ncross validation accuracy with only 10 support vectors: " 
 		 << cross_validate_trainer(reduced2(trainer,10), samples, labels, 3);
 
-	// Let's print out the original cross validation score too for comparison.
 	cout << "cross validation accuracy with all the original support vectors: " 
 		 << cross_validate_trainer(trainer, samples, labels, 3);
 
-	// When you run this program you should see that, for this problem, you can reduce the
-	// number of basis vectors down to 10 without hurting the cross validation accuracy. 
 
 
-	// To get the reduced decision function out we would just do this:
 	learned_function.function = reduced2(trainer,10).train(samples, labels);
-	// And similarly for the probabilistic_decision_function: 
 	learned_pfunct.function = train_probabilistic_decision_function(reduced2(trainer,10), samples, labels, 3);
 	}
 		
