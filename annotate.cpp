@@ -13,10 +13,6 @@
 #include<fstream>
 #include<cmath>
 
-#define HAPPY		0
-#define SAD			1
-#define SURPRISE	2
-#define ANGRY		3
 
 using namespace std;
 using namespace dlib;
