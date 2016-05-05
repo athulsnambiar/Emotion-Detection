@@ -3,6 +3,7 @@
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/gui_widgets.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_io.h"
+#include "/home/qburst/opencv3/dlib-18.18/dlib/svm_threaded.h"
 
 #include<iostream>
 #include<stdio.h>
@@ -128,7 +129,7 @@ std::vector<std::vector <float> > getAttributesCSV(char * name)
 
 void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 {
-		std::vector<std::vector <float> > matrix = getAttributesCSV("points.csv");
+	std::vector<std::vector <float> > matrix = getAttributesCSV("points.csv");
 	std::vector <int> matLabel = getLabelsCSV("points.csv");
 	sample_type temp;
 	
@@ -143,4 +144,50 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 		labels.push_back(matLabel[i]);
 	}
 }
+
+
+int main()
+{
+	try
+	{
+		std::vector<sample_type> samples;
+		std::vector<double> labels;
+		
+		generateData(samples, labels);
+		
+		cout << "samples.size(): "<< samples.size() << endl;
+		
+		typedef one_vs_one_trainer<any_trainer<sample_type> > ovo_trainer;
+		
+		ovo_trainer trainer;
+		
+		typedef radial_basis_kernel<sample_type> rbf_kernel;
+		
+		svm_nu_trainer<rbf_kernel> rbf_trainer;
+		
+		rbf_trainer.set_kernel(rbf_kernel(1.4641e-05));
+		rbf_trainer.set_nu(0.0498789);
+		
+		trainer.set_trainer(rbf_trainer);
+		
+		randomize_samples(samples, labels);
+		
+		cout << "cross validation: \n" << cross_validate_multiclass_trainer(trainer, samples, labels, 3) << endl;
+		
+		one_vs_one_decision_function<ovo_trainer> df = trainer.train(samples, labels);
+		
+		one_vs_one_decision_function<ovo_trainer, decision_function<rbf_kernel> > df2;
+		
+		df2 = df;
+		serialize("multiple_emotion_data.dat") << df2;
+		
+	}
+	catch (std::exception& e)
+	{
+		cout << "exception thrown!" << endl;
+		cout << e.what() << endl;
+	}
+		
+}
+
 
