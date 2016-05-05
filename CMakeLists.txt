@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(FaceDetection)
 
+include(/home/qburst/opencv3/dlib-18.18/dlib/cmake)
 
 set(FaceDerection_VERSION_MAJOR 1)
 set(FaceDerection_VERSION_MINOR 0)
