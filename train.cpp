@@ -6,7 +6,7 @@
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/gui_widgets.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_io.h"
-
+#include "/home/qburst/opencv3/dlib-18.18/dlib/svm_threaded.h"
 #include<iostream>
 #include<stdio.h>
 #include<sstream>
@@ -174,11 +174,11 @@ int main()
 		randomize_samples(samples, labels);
 		
 		const double max_nu = maximum_nu(labels);
-		
+		matrix<double, 1, 2> accuracy;
 		svm_nu_trainer<kernel_type> trainer;
-		
+		double maxg = 0.0,maxu = 0.0;
 		cout << "doing cross validation" << endl;
-		for (double gamma = 0.00001; gamma <= 1; gamma *= 5)
+		for (double gamma = 0.00001; gamma <= 0.7; gamma *= 5)
 		{
 			for (double nu = 0.00001; nu < max_nu; nu *= 5)
 			{
@@ -187,42 +187,36 @@ int main()
 	
 				cout << "gamma: " << gamma << "	nu: " << nu;
 	
-				cout << "	 cross validation accuracy: " << cross_validate_trainer(trainer, samples, labels, 3);
+				accuracy =cross_validate_trainer_threaded(trainer, samples, labels, 3,8);
+				cout << "	 cross validation accuracy: "<<accuracy(0)<<"\t"<<accuracy(0)<<"\n";
+				fi()
+				
 			}
 		}
-		
-	trainer.set_kernel(kernel_type(1e-5));
-	trainer.set_nu(0.03125);
-	typedef decision_function<kernel_type> dec_funct_type;
-	typedef normalized_function<dec_funct_type> funct_type;
 	
-	funct_type learned_function;
-	learned_function.normalizer = normalizer;
-	learned_function.function = trainer.train(samples, labels);
 	
-	cout << "\nnumber of support vectors in our learned_function is " 
-		 << learned_function.function.basis_vectors.size() << endl;
+		trainer.set_kernel(kernel_type(1e-5));
+		trainer.set_nu(0.03125);
+		typedef decision_function<kernel_type> dec_funct_type;
+		typedef normalized_function<dec_funct_type> funct_type;
+	
+		funct_type learned_function;
+		learned_function.normalizer = normalizer;
+		learned_function.function = trainer.train(samples, labels);
+	
+		cout << "\nnumber of support vectors in our learned_function is " << learned_function.function.basis_vectors.size() << endl;
 		 
-	typedef probabilistic_decision_function<kernel_type> probabilistic_funct_type;  
-	typedef normalized_function<probabilistic_funct_type> pfunct_type;
+		typedef probabilistic_decision_function<kernel_type> probabilistic_funct_type;  
+		typedef normalized_function<probabilistic_funct_type> pfunct_type;
 
-	pfunct_type learned_pfunct; 
-	learned_pfunct.normalizer = normalizer;
-	learned_pfunct.function = train_probabilistic_decision_function(trainer, samples, labels, 3);
+		pfunct_type learned_pfunct; 
+		learned_pfunct.normalizer = normalizer;
+		learned_pfunct.function = train_probabilistic_decision_function(trainer, samples, labels, 3);
 	
-	cout << "\nnumber of support vectors in our learned_pfunct is "<< learned_pfunct.function.decision_funct.basis_vectors.size() << endl;
-	serialize("emotion_predictor_data.dat") << learned_pfunct;
+		cout << "\nnumber of support vectors in our learned_pfunct is "<< learned_pfunct.function.decision_funct.basis_vectors.size() << endl;
 	
-		cout << "\ncross validation accuracy with only 10 support vectors: " 
-		 << cross_validate_trainer(reduced2(trainer,10), samples, labels, 3);
+		serialize("emotion_predictor_data.dat") << learned_pfunct;
 
-	cout << "cross validation accuracy with all the original support vectors: " 
-		 << cross_validate_trainer(trainer, samples, labels, 3);
-
-
-
-	learned_function.function = reduced2(trainer,10).train(samples, labels);
-	learned_pfunct.function = train_probabilistic_decision_function(reduced2(trainer,10), samples, labels, 3);
 	}
 		
 	catch (std::exception& e)
