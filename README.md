@@ -1,17 +1,22 @@
 Emotion-Detection
 =================
 
-This is project to implement Emotion recognition C++ using dlib.
+This is project to implement Emotion recognition C++ using dlib<span
+id="anchor"></span>This is project to implement Emotion recognition C++
+using dlib.
 
-<span id="anchor"></span>Emotions
----------------------------------
+Emotions
+--------
 
--   Neutral 0
--   Happy 1
--   Sad 2
--   Anger 3
--   Surprise 4
--   Disgust 5
+0\. Neutral
+
+1\. Happy
+
+2\. Sad
+
+3\. Anger
+
+4\. Surprise
 
 <span id="anchor-1"></span>Steps for use
 ----------------------------------------
