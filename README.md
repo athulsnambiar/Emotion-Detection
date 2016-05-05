@@ -14,7 +14,7 @@ step 05: download and install cmake to compile
 
 step 06: For training put images happy and sad images in seperate folders
 
-step 07: run annotate.exe "./annotate.exe <emotion no> <dierctoy of images>/*"
+step 07: run annotate.exe "./annotate.exe (emotion no) (dierctoy of images)/*"
 
 step 08: run ./train.exe
 
