@@ -1,6 +1,3 @@
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing/frontal_face_detector.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing/render_face_detections.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing.h"
@@ -16,7 +13,6 @@
 
 using namespace std;
 using namespace dlib;
-using namespace cv;
 
 
 typedef matrix<double,4556,1> sample_type;
