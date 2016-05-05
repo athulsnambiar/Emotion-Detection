@@ -172,40 +172,50 @@ int main()
 		samples[i] = normalizer(samples[i]);
 		
 		randomize_samples(samples, labels);
-		
+		svm_nu_trainer<kernel_type> trainer;
+/*
 		const double max_nu = maximum_nu(labels);
 		matrix<double, 1, 2> accuracy;
-		svm_nu_trainer<kernel_type> trainer;
-		double maxg = 0.0,maxu = 0.0;
+		double maxg = 0.0,maxn = 0.0,max1 = 0.0,max2 = 0.0;
 		cout << "doing cross validation" << endl;
-		for (double gamma = 0.00001; gamma <= 0.7; gamma *= 5)
+		for (double gamma = 0.00001; gamma <= 0.0025; gamma *= 1.1)
 		{
-			for (double nu = 0.00001; nu < max_nu; nu *= 5)
+			cout<<"\nhi\n";
+			for (double nu = 0.00001; nu < max_nu; nu *= 2)
 			{
 				trainer.set_kernel(kernel_type(gamma));
 				trainer.set_nu(nu);
 	
 				cout << "gamma: " << gamma << "	nu: " << nu;
 	
-				accuracy =cross_validate_trainer_threaded(trainer, samples, labels, 3,8);
+				accuracy = cross_validate_trainer_threaded(trainer, samples, labels, 3,8);
 				cout << "	 cross validation accuracy: "<<accuracy(0)<<"\t"<<accuracy(0)<<"\n";
-				fi()
+				if(max1 <= accuracy(0) && max2 <= accuracy(1))
+				{
+					max1 = accuracy(0);
+					max2 = accuracy(1);
+					maxg = gamma;
+					maxn = nu;
+				}
 				
 			}
+			cout
+			cout<< max_nu<<"\n\n";
 		}
+		cout<<"\n\n\nAccuracy values                             "<<max1<<"\t"<<max2<<"\n\n\n";
+		cout<<"\n\n\nValues of gamma and nu for maximum accuracy "<<maxg<<"\t"<<maxn<<"\n\n\n";
 	
+		trainer.set_kernel(kernel_type(maxg));
+		trainer.set_nu(maxn);
+		
+	//	gamma = 1.4641e-05
+	//	nu    = 0.0498789
+
+*/		
+		//comment this line if cross validating by your self
+		trainer.set_kernel(kernel_type(1.4641e-05));
+		trainer.set_nu(0.0498789);
 	
-		trainer.set_kernel(kernel_type(1e-5));
-		trainer.set_nu(0.03125);
-		typedef decision_function<kernel_type> dec_funct_type;
-		typedef normalized_function<dec_funct_type> funct_type;
-	
-		funct_type learned_function;
-		learned_function.normalizer = normalizer;
-		learned_function.function = trainer.train(samples, labels);
-	
-		cout << "\nnumber of support vectors in our learned_function is " << learned_function.function.basis_vectors.size() << endl;
-		 
 		typedef probabilistic_decision_function<kernel_type> probabilistic_funct_type;  
 		typedef normalized_function<probabilistic_funct_type> pfunct_type;
 
