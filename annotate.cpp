@@ -28,10 +28,10 @@ shape_predictor sp;
 int faceNumber = 0;
 
 int detectFaceAndCrop(char *imageName);
-int getAllAttributes(int noOfFaces,int emotion);
+int storeAttributesToCSV(int noOfFaces,int emotion);
 double length(point a,point b);
 double slope(point a,point b);
-
+void removePhotos();
 
 int detectFaceAndCrop(char *imageName)
 {
@@ -67,7 +67,7 @@ int detectFaceAndCrop(char *imageName)
 	return(faceRectangles.size());	
 }
 
-int getAllAttributes(int noOfFaces,int emotion)
+int storeAttributesToCSV(int noOfFaces,int emotion)
 {
 	int i,j,k;
 	frontal_face_detector detector = get_frontal_face_detector();
@@ -144,6 +144,22 @@ double slope(point a,point b)
 		return atan(double(y1-y2))/(x1-x2);
 }
 
+
+void removePhotos()
+{
+	int i;
+	stringstream s;
+	
+	for(i = 0; i < faceNumber; i++)
+	{
+		s.str("");
+		s << "face" << i << ".jpg";
+		remove(s.str().c_str());
+	}
+}
+
+
+
 int main(int argc,char **argv)
 {
 	int noOfFaces = 0;
@@ -158,7 +174,8 @@ int main(int argc,char **argv)
 		noOfFaces += detectFaceAndCrop(argv[i]);
 		cout<<"image "<<(i-1)<<"\n";
 	}
-	getAllAttributes(noOfFaces,(int)(argv[1][0]-'0'));
+	storeAttributesToCSV(noOfFaces,(int)(argv[1][0]-'0'));
+	removePhotos();
 	return 0;
 }
 
