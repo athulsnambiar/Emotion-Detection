@@ -13,6 +13,7 @@
 #include<fstream>
 #include<cmath>
 #include<vector>
+#include<cstdio>
 
 using namespace std;
 using namespace dlib;
@@ -40,7 +41,7 @@ int detectFaceAndCrop(char *imageName);
 std::vector<sample_type> getAllAttributes(int noOfFaces);
 double length(point a,point b);
 double slope(point a,point b);
-
+void removePhotos();
 
 
 
@@ -152,6 +153,29 @@ double slope(point a,point b)
 		return atan(double(y1-y2))/(x1-x2);
 }
 
+
+
+
+void removePhotos()
+{
+	int i;
+	stringstream s;
+	
+	for(i = 0; i < faceNumber; i++)
+	{
+		s.str("");
+		s << "face" << i << ".jpg";
+		remove(s.str().c_str());
+	}
+}
+
+
+
+
+
+
+
+
 int main(int argc,char **argv)
 {
 	int noOfFaces = 0;
@@ -174,6 +198,10 @@ int main(int argc,char **argv)
 		cout << "probablity that face "<<i<<" is happy :" << ep(samples[i]) << endl;
 		cout << "probablity that face "<<i<<" is sad   :" << (1.0 - ep(samples[i])) << "\n\n\n";
 	}
+	cout<<"\n\nPress Enter to delete all Photos.............";
+	cin.ignore();
+	removePhotos();
 	return 0;
+	
 }
 
