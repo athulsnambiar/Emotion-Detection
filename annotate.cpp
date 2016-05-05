@@ -89,7 +89,7 @@ int storeAttributesToCSV(int noOfFaces,int emotion)
 		s.str("");
 		s<<"face"<<(i)<<".jpg";
 		load_image(img,s.str());
-		cout<<"image "<<(i+1)<<"\n";
+		cout<<"writing image"<<(i-1)<<" to csv\n";
 		
 		std::vector<dlib::rectangle> faceRectangles = detector(img);
 	
