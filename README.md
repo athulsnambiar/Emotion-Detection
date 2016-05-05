@@ -18,6 +18,19 @@ Emotions
 
 4\. Surprise
 
+Requirements
+------------
+
+1\. [dlib C++ Library](http://dlib.net/)
+
+2\. [68-face-landmark
+shape\_predictor](http://sourceforge.net/projects/dclib/files/dlib/v18.10/shape_predictor_68_face_landmarks.dat.bz2)
+
+3\. A large image database with atleast 5000 images with images of each
+emotions in sepetate folders
+
+4\. Tools – Linux,Cmake,g++,make
+
 <span id="anchor-1"></span>Steps for use
 ----------------------------------------
 
