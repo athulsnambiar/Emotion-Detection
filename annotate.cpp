@@ -168,7 +168,7 @@ int main(int argc,char **argv)
 	for(int i = 2;i < argc; i++)
 	{
 		noOfFaces += detectFaceAndCrop(argv[i]);
-		cout<<"image "<<(i-1)<<"\n";
+		cout<<"image "<<(i-1)<<"\t"<<argv[i]<<"\n";
 	}
 	storeAttributesToCSV(noOfFaces,(int)(argv[1][0]-'0'));
 	removePhotos();
