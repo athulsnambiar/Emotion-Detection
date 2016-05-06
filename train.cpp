@@ -139,11 +139,13 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 		{
 			temp(j) = matrix[i][j];
 		}
-		samples.push_back(temp);
+		//samples.push_back(temp);
 		if(matLabel[i] == 0)
-			labels.push_back(+1);
+		{	labels.push_back(+1);
+			samples.push_back(temp);}
 		if(matLabel[i] == 1)
-			labels.push_back(-1);
+		{	labels.push_back(-1);
+			samples.push_back(temp);}
 	}
 }
 
