@@ -168,17 +168,22 @@ int main()
 		rbf_trainer.set_kernel(rbf_kernel(1.4641e-05));
 		rbf_trainer.set_nu(0.0498789);
 		
+		cout << "Trainer: "<< samples.size() << endl;
 		trainer.set_trainer(rbf_trainer);
-		
+		cout << "RBF trainer Set\n\n";
+		cout << "Randomizing Samples set\n\n";
 		randomize_samples(samples, labels);
 		
+		//dont cross validate if the database is large. process will run out of heap space
 		//cout << "cross validation: \n" << cross_validate_multiclass_trainer(trainer, samples, labels, 3) << endl;
 		
+		cout << "Creating One vs One Training Function\n\n";
 		one_vs_one_decision_function<ovo_trainer> df = trainer.train(samples, labels);
 		
 		one_vs_one_decision_function<ovo_trainer, decision_function<rbf_kernel> > df2;
-		
+		cout << "Preparing to write on disk\n\n";
 		df2 = df;
+		cout << "Writing training Data on disk\n\n";
 		serialize("multiple_emotion_data.dat") << df2;
 		
 	}
