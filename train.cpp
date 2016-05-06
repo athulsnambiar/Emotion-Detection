@@ -1,7 +1,5 @@
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing/frontal_face_detector.h"
-#include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing/render_face_detections.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing.h"
-#include "/home/qburst/opencv3/dlib-18.18/dlib/gui_widgets.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_io.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/svm_threaded.h"
 #include<iostream>
