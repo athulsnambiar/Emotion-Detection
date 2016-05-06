@@ -172,7 +172,7 @@ int main()
 		
 		randomize_samples(samples, labels);
 		
-		cout << "cross validation: \n" << cross_validate_multiclass_trainer(trainer, samples, labels, 3) << endl;
+		//cout << "cross validation: \n" << cross_validate_multiclass_trainer(trainer, samples, labels, 3) << endl;
 		
 		one_vs_one_decision_function<ovo_trainer> df = trainer.train(samples, labels);
 		
