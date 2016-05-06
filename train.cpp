@@ -1,7 +1,5 @@
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing/frontal_face_detector.h"
-#include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing/render_face_detections.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_processing.h"
-#include "/home/qburst/opencv3/dlib-18.18/dlib/gui_widgets.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/image_io.h"
 #include "/home/qburst/opencv3/dlib-18.18/dlib/svm_threaded.h"
 #include<iostream>
@@ -139,11 +137,17 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 		{
 			temp(j) = matrix[i][j];
 		}
-		samples.push_back(temp);
+		//samples.push_back(temp);
 		if(matLabel[i] == 0)
+		{	
 			labels.push_back(+1);
+			samples.push_back(temp);
+		}
 		if(matLabel[i] == 1)
+		{	
 			labels.push_back(-1);
+			samples.push_back(temp);
+		}
 	}
 }
 
