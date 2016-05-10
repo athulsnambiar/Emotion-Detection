@@ -77,7 +77,7 @@ int main(int argc,char **argv)
 {
 	float mask[] = {-1,0,1};
 	Mat image = imread(argv[1],CV_LOAD_IMAGE_GRAYSCALE);
-    image.convertTo(image,CV_64F);
+    image.convertTo(image,CV_32F);
     Mat x = diffx(image);
     Mat y = diffy(image);
 	Mat magnitude(x.size(),x.type());
@@ -92,14 +92,7 @@ int main(int argc,char **argv)
 	string s = type2str(x.type());
 	cout<<"\n\n\ntype : "<<s<<"\n\n\n";
 	
-	
-	
-	if((x.size() == y.size()) && (x.type() == y.type()) && (x.depth() == CV_32F || x.depth() == CV_64F)) 
-		cout<<"\n\n\nall ok\t"<<"type : "<<x.type()<<"\n\n\n";
-	else
-		cout<<"\n\n\nall not ok\t"<<"type : "<<x.depth()<<"\n\n\n";
 	cartToPolar(x,y,magnitude,angle,true);
-	
 	
 	convertScaleAbs( x, absx );
 	convertScaleAbs( x, absy );
@@ -109,7 +102,14 @@ int main(int argc,char **argv)
 	imwrite("changeAbsY.jpg",absy,params);
 	imwrite("magnitude.jpg",magnitude,params);
 	imwrite("angle.jpg",angle,params);
-	    
+	cin.ignore();
+	remove("changeX.jpg");
+	remove("changeY.jpg");
+	remove("changeAbsX.jpg");
+	remove("changeAbsY.jpg");
+	remove("magnitude.jpg");
+	remove("angle.jpg");
+	
     return 0;
 }
 
