@@ -127,8 +127,9 @@ std::vector<std::vector <float> > getAttributesCSV(char * name)
 
 void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 {
-	std::vector<std::vector <float> > matrix = getAttributesCSV("points.csv");
-	std::vector <int> matLabel = getLabelsCSV("points.csv");
+	char filename[] = "points.csv";
+	std::vector<std::vector <float> > matrix = getAttributesCSV(filename);
+	std::vector <int> matLabel = getLabelsCSV(filename);
 	sample_type temp;
 	
 	
