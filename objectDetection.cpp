@@ -17,6 +17,9 @@ Mat diffy(Mat img);
 string type2str(int type);
 Mat remRowCol(Mat img,int r,int c);
 Mat addPi(Mat angle);
+std::vector< std::vector<double> > histogramOfCells(Mat angle,Mat gradient);
+std::vector<double> binning(Mat angle,Mat gradient,int x,int y);
+
 
 bool isPixelInside(int row,int col,int x,int y)
 {
@@ -107,6 +110,56 @@ Mat addPi(Mat angle)
 	return angle;
 
 }
+
+std::vector< std::vector<double> > histogramOfCells(Mat angle,Mat gradient)
+{
+	std::vector< std::vector<double> > cellHist;
+	std::vector<double> hist;
+	int col = angle.cols;
+	int row = angle.rows;
+	int i,j;
+	for(i = 0; i <row;i += 6)
+		for(j=0;j < col; j += 6)
+		{
+			hist = binning(angle,gradient,i,j);
+			cellHist.push_back(hist);
+		}
+	
+	return cellHist;
+	
+	
+}
+
+std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
+{
+	std::vector<double> hist(9, 0);
+	int j,i;
+	for(i = x; i <x+6;i++)
+		for(j=y;j < y+6; j++)
+		{
+			if(angle.at<float>(i,j) >= 0.0  && angle.at<float>(i,j) < 20.0)
+				hist[0] += gradient.at<float>(i,j);
+			else if(angle.at<float>(i,j) >= 20.0  && angle.at<float>(i,j) < 40.0)
+				hist[1] += gradient.at<float>(i,j);
+			else if(angle.at<float>(i,j) >= 40.0  && angle.at<float>(i,j) < 60.0)
+				hist[2] += gradient.at<float>(i,j);
+			else if(angle.at<float>(i,j) >= 60.0  && angle.at<float>(i,j) < 80.0)
+				hist[3] += gradient.at<float>(i,j);
+			else if(angle.at<float>(i,j) >= 80.0  && angle.at<float>(i,j) < 100.0)
+				hist[4] += gradient.at<float>(i,j);
+			else if(angle.at<float>(i,j) >= 100.0  && angle.at<float>(i,j) < 120.0)
+				hist[5] += gradient.at<float>(i,j);
+			else if(angle.at<float>(i,j) >= 120.0  && angle.at<float>(i,j) < 140.0)
+				hist[6] += gradient.at<float>(i,j);
+			else if(angle.at<float>(i,j) >= 140.0  && angle.at<float>(i,j) < 160.0)
+				hist[7] += gradient.at<float>(i,j);
+			else
+				hist[8] += gradient.at<float>(i,j);
+				
+		}
+	return hist;
+}
+
 
 int main(int argc,char **argv)
 {
