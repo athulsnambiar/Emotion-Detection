@@ -42,12 +42,12 @@ Mat diffsizekernel(Mat img, int f, int c)
 	return imgDiff;
 }
 
-Mat diffx(Mat img) 
+Mat diffy(Mat img) 
 {
 	return diffsizekernel(img, 3, 1);
 }
 
-Mat diffy(Mat img) 
+Mat diffx(Mat img) 
 {
 	return diffsizekernel(img, 1, 3);
 }
@@ -196,7 +196,7 @@ int main(int argc,char **argv)
 	
 	
 	convertScaleAbs( x, absx );
-	convertScaleAbs( x, absy );
+	convertScaleAbs( y, absy );
 	imwrite("changeX.jpg",x,params);
 	imwrite("changeY.jpg",y,params);
 	imwrite("changeAbsX.jpg",absx,params);
