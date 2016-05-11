@@ -138,21 +138,21 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
 	for(i = x; i <x+6;i++)
 		for(j=y;j < y+6; j++)
 		{
-			if(angle.at<float>(i,j) >= 0.0  && angle.at<float>(i,j) < 20.0)
+			if(angle.at<float>(i,j) < 20.0)
 				hist[0] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) >= 20.0  && angle.at<float>(i,j) < 40.0)
+			else if(angle.at<float>(i,j) < 40.0)
 				hist[1] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) >= 40.0  && angle.at<float>(i,j) < 60.0)
+			else if(angle.at<float>(i,j) < 60.0)
 				hist[2] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) >= 60.0  && angle.at<float>(i,j) < 80.0)
+			else if(angle.at<float>(i,j) < 80.0)
 				hist[3] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) >= 80.0  && angle.at<float>(i,j) < 100.0)
+			else if(angle.at<float>(i,j) < 100.0)
 				hist[4] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) >= 100.0  && angle.at<float>(i,j) < 120.0)
+			else if(angle.at<float>(i,j) < 120.0)
 				hist[5] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) >= 120.0  && angle.at<float>(i,j) < 140.0)
+			else if(angle.at<float>(i,j) < 140.0)
 				hist[6] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) >= 140.0  && angle.at<float>(i,j) < 160.0)
+			else if(angle.at<float>(i,j) < 160.0)
 				hist[7] += gradient.at<float>(i,j);
 			else
 				hist[8] += gradient.at<float>(i,j);
