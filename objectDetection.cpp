@@ -19,7 +19,7 @@ Mat remRowCol(Mat img,int r,int c);
 Mat addPi(Mat angle);
 std::vector< std::vector<double> > histogramOfCells(Mat angle,Mat gradient);
 std::vector<double> binning(Mat angle,Mat gradient,int x,int y);
-
+Mat gaussianSpatialWindow(Mat img);
 
 bool isPixelInside(int row,int col,int x,int y)
 {
@@ -161,6 +161,25 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
 }
 
 
+
+Mat gaussianSpatialWindow(Mat img)
+{
+	Mat kernel = (Mat_<double>(6,6) <<  0.025291,0.026736,0.027489,0.027489,0.026736,0.025291,
+										0.026736,0.028263,0.029059,0.029059,0.028263,0.026736,
+										0.027489,0.029059,0.029878,0.029878,0.029059,0.027489,
+										0.027489,0.029059,0.029878,0.029878,0.029059,0.027489,
+										0.026736,0.028263,0.029059,0.029059,0.028263,0.026736,
+										0.025291,0.026736,0.027489,0.027489,0.026736,0.025291);
+
+	Mat imgDiff;
+	filter2D( img, imgDiff,-1,kernel,Point(-1,-1) );
+	return imgDiff;
+}
+
+
+
+
+
 int main(int argc,char **argv)
 {
 	const int cellSize = 6;
@@ -183,12 +202,10 @@ int main(int argc,char **argv)
 	params.push_back(100);
 	
 	
-	
-	string s = type2str(x.type());
-	cout<<"\n\n\ntype : "<<s<<"\n\n\n";
-	
 	cartToPolar(x,y,magnitude,angle,true);
+	
 	angle = addPi(angle);
+	gaussianSpatialWindow(magnitude);
 	
 	minMaxLoc(angle,&min,&max);
 	
