@@ -17,7 +17,7 @@ Mat diffy(Mat img);
 string type2str(int type);
 Mat remRowCol(Mat img,int r,int c);
 Mat addPi(Mat angle);
-std::vector< std::vector<double> > histogramOfCells(Mat angle,Mat gradient);
+std::vector< std::vector< std::vector<double> > > histogramOfCells(Mat angle,Mat gradient);
 std::vector<double> binning(Mat angle,Mat gradient,int x,int y);
 Mat gaussianSpatialWindow(Mat img,int blockSize);
 
@@ -109,20 +109,23 @@ Mat addPi(Mat angle)
 
 }
 
-std::vector< std::vector<double> > histogramOfCells(Mat angle,Mat gradient)
+std::vector< std::vector< std::vector<double> > > histogramOfCells(Mat angle,Mat gradient)
 {
-	std::vector< std::vector<double> > cellHist;
+	std::vector< std::vector< std::vector<double> > > cellHist;
+	std::vector< std::vector<double> > cellHistRow;
 	std::vector<double> hist;
 	int col = angle.cols;
 	int row = angle.rows;
 	int i,j;
 	for(i = 0; i <row;i += 6)
+	{
 		for(j=0;j < col; j += 6)
 		{
 			hist = binning(angle,gradient,i,j);
-			cellHist.push_back(hist);
+			cellHistRow.push_back(hist);
 		}
-	
+		cellHist.push_back(cellHistRow);
+	}
 	return cellHist;
 	
 	
@@ -137,35 +140,36 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
 	for(i = x; i <x+6;i++)
 		for(j=y;j < y+6; j++)
 		{
-		        ang= angle.at<float>(i,j);
+			ang= angle.at<float>(i,j);
 			if(ang <= 10.0)
-			       hist[0] +=(ang+10)/20 * gradient.at<float>(i,j);
+			hist[0] +=(ang+10)/20 * gradient.at<float>(i,j);
 			else if(ang > 10.0 && ang < 170.0)
 			{
-			   low= ang-10;
-			   high= ang+10;
-			   int index =(int)ang/20;
-			   border = ang - (int)ang%20;
-                           if(low > index*20.0)
-                             {
-                               border= border + 20.0;
-                               index = (int)border/20;
-                             }
-                           			  			   			   
-			   first = (border-low)/20;
-			   second = (high-border)/20;
-			   			   			   
-			   hist[index] +=second*gradient.at<float>(i,j);
-			   hist[index-1] +=first*gradient.at<float>(i,j);
+				low= ang-10;
+				high= ang+10;
+				int index =(int)ang/20;
+				border = ang - (int)ang%20;
+				if(low > index*20.0)
+				{
+					border= border + 20.0;
+					index = (int)border/20;
+				}
+				
+				first = (border-low)/20;
+				second = (high-border)/20;
+				hist[index] +=second*gradient.at<float>(i,j);
+				hist[index-1] +=first*gradient.at<float>(i,j);
 			}			
 			else
-			 {
-			   low= 180-ang+10;
-			   hist[8] += low/20 * gradient.at<float>(i,j); 	
-			 }  		 
-		 }   			
+			{
+				low= 180-ang+10;
+				hist[8] += low/20 * gradient.at<float>(i,j); 	
+			}  		 
+		 }				
 	return hist;
 }
+
+
 
 Mat gaussianSpatialWindow(Mat img,int blockSize)
 {
@@ -175,6 +179,8 @@ Mat gaussianSpatialWindow(Mat img,int blockSize)
 	filter2D( img, imgDiff,-1,gaussiankernel,Point(-1,-1) );
 	return imgDiff;
 }
+
+
 
 int main(int argc,char **argv)
 {
@@ -202,6 +208,7 @@ int main(int argc,char **argv)
 	
 	angle = addPi(angle);
 	magnitude = gaussianSpatialWindow(magnitude,3);
+	histogramOfCells(angle,magnitude);
 	
 	minMaxLoc(angle,&min,&max);
 	
