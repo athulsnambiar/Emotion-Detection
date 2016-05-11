@@ -88,9 +88,7 @@ Mat remRowCol(Mat img,int r,int c)
 	int i,j;
 	for(j=c/2;j < (col - c/2);j++)
 		for(i=r/2;i<(row - r/2);i++)
-			img.at<float>(i,j) = img.at<float>(i,j+1);
-	  
-	img.copyTo(image);
+			image.at<float>(i,j) = img.at<float>(i,j+1);
 	  
 	return image;
 	
@@ -183,7 +181,7 @@ int main(int argc,char **argv)
 	
 	image.convertTo(image,CV_32F);
 	if(image.rows%cellSize != 0 || image.cols%cellSize == 0)
-		image = remRowCol(image,image.rows,image.cols);
+		image = remRowCol(image,image.rows%cellSize,image.cols%cellSize);
 	
 	Mat x = diffx(image);
 	Mat y = diffy(image);
@@ -200,7 +198,7 @@ int main(int argc,char **argv)
 	cartToPolar(x,y,magnitude,angle,true);
 	
 	angle = addPi(angle);
-	gaussianSpatialWindow(magnitude);
+	magnitude = gaussianSpatialWindow(magnitude);
 	
 	minMaxLoc(angle,&min,&max);
 	
