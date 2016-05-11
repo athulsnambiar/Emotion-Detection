@@ -21,6 +21,7 @@ std::vector< std::vector<double> > histogramOfCells(Mat angle,Mat gradient);
 std::vector<double> binning(Mat angle,Mat gradient,int x,int y);
 Mat gaussianSpatialWindow(Mat img);
 
+
 bool isPixelInside(int row,int col,int x,int y)
 {
 	if(x < row && y < col && x >= 0 && y >= 0)
@@ -160,8 +161,6 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
 	return hist;
 }
 
-
-
 Mat gaussianSpatialWindow(Mat img)
 {
 	Mat kernel = (Mat_<double>(6,6) <<  0.025291,0.026736,0.027489,0.027489,0.026736,0.025291,
@@ -175,10 +174,6 @@ Mat gaussianSpatialWindow(Mat img)
 	filter2D( img, imgDiff,-1,kernel,Point(-1,-1) );
 	return imgDiff;
 }
-
-
-
-
 
 int main(int argc,char **argv)
 {
