@@ -20,6 +20,8 @@ Mat addPi(Mat angle);
 std::vector< std::vector< std::vector<double> > > histogramOfCells(Mat angle,Mat gradient);
 std::vector<double> binning(Mat angle,Mat gradient,int x,int y);
 Mat gaussianSpatialWindow(Mat img,int blockSize);
+std::vector< std::vector< std::vector<double> > > getBlockDiscriptors(std::vector< std::vector< std::vector<double> > > cellHistograms);
+std::vector<double> getSingleBlockDiscriptor(std::vector< std::vector< std::vector<double> > > cellHistograms,int x,int y);
 
 bool isPixelInside(int row,int col,int x,int y)
 {
@@ -171,6 +173,19 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
 
 
 
+
+std::vector<double> getSingleBlockDiscriptor(std::vector< std::vector< std::vector<double> > > cellHistograms,int x,int y)
+{
+	std::vector<double> block(81, 0);
+	int j,i,k,l;
+	
+	for(i = x,l = 0; i <x+3;i++)
+		for(j=y;j < y+3; j++)
+			for(k = 0; k < 9; k++)
+				block[l++] = cellHistograms[i][j][k];
+	return block;
+}
+
 Mat gaussianSpatialWindow(Mat img,int blockSize)
 {
 	Mat gaussiankernel = getGaussianKernel(blockSize, blockSize*0.5, CV_32F);
@@ -181,6 +196,25 @@ Mat gaussianSpatialWindow(Mat img,int blockSize)
 }
 
 
+
+
+std::vector< std::vector< std::vector<double> > > getBlockDiscriptors(std::vector< std::vector< std::vector<double> > > cellHistograms)
+{
+	std::vector< std::vector< std::vector<double> > > blockDiscriptor;
+	std::vector< std::vector<double> > blockDiscriptorRow;
+	std::vector<double> blockHist;
+	
+	for(int i = 0; i < cellHistograms.size(); i+=3)
+	{
+		for(int j = 0; j < cellHistograms[0].size(); j+=3)
+		{
+			blockHist = getSingleBlockDiscriptor(cellHistograms,i,j);
+			blockDiscriptorRow.push_back(blockHist);
+		}
+		blockDiscriptor.push_back(blockDiscriptorRow);
+	}
+	return blockDiscriptor;
+}
 
 int main(int argc,char **argv)
 {
