@@ -133,31 +133,41 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
 {
 	std::vector<double> hist(9, 0);
 	int j,i;
+	float low ,high ,border;
+	float ang , first , second ;
 	for(i = x; i <x+6;i++)
 		for(j=y;j < y+6; j++)
 		{
-			if(angle.at<float>(i,j) < 20.0)
-				hist[0] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) < 40.0)
-				hist[1] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) < 60.0)
-				hist[2] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) < 80.0)
-				hist[3] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) < 100.0)
-				hist[4] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) < 120.0)
-				hist[5] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) < 140.0)
-				hist[6] += gradient.at<float>(i,j);
-			else if(angle.at<float>(i,j) < 160.0)
-				hist[7] += gradient.at<float>(i,j);
+		        ang= angle.at<float>(i,j);
+			if(ang <= 10.0)
+			       hist[0] +=(ang+10)/20 * gradient.at<float>(i,j);
+			else if(ang > 10.0 && ang < 170.0)
+			{
+			   low= ang-10;
+			   high= ang+10;
+			   int index =(int)ang/20;
+			   border = ang - (int)ang%20;
+                           if(low > index*20.0)
+                             {
+                               border= border + 20.0;
+                               index = (int)border/20;
+                             }
+                           			  			   			   
+			   first = (border-low)/20;
+			   second = (high-border)/20;
+			   			   			   
+			   hist[index] +=second*gradient.at<float>(i,j);
+			   hist[index-1] +=first*gradient.at<float>(i,j);
+			}			
 			else
-				hist[8] += gradient.at<float>(i,j);
-				
-		}
+			 {
+			   low= 180-ang+10;
+			   hist[8] += low/20 * gradient.at<float>(i,j); 	
+			 }  		 
+		 }   			
 	return hist;
 }
+
 
 Mat gaussianSpatialWindow(Mat img)
 {
