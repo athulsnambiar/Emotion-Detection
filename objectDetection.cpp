@@ -4,6 +4,7 @@
 #include "opencv2/core/core.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <cmath>
 
@@ -38,9 +39,9 @@ vector1D binning(Mat angle,Mat gradient,int x,int y,int binSize=9,int cellSize =
 
 vector3D getBlockDescriptors(vector3D cellHistograms,int blockSize = 3,int binSize = 9);
 
-vector1D getSingleBlockDescriptor(vector3D cellHistograms,int x,int y,int blockSize = 3,int binSize = 9);
+vector1D getSingleBlockDescriptor(vector3D cellHistograms,int x,int y,int blockSize = 3);
 
-vector3D normalizeBlockDescriptor(vector3D blockDescriptor,int normalizeType = 0,double threshold = 0.3,double e = 0.0);
+vector3D normalizeBlockDescriptor(vector3D blockDescriptor,int normalizeType = 0,double threshold = 0.2,double e = 0.0);
 
 vector1D l2Hys(vector1D array,double threshold = 0.2,double e = 0.0);
 
@@ -48,6 +49,11 @@ vector1D l2Norm(vector1D array,double e = 0.0);
 
 vector1D l1Sqrt(vector1D array,double e = 0.0);
 
+vector3D getHOGFeature(Mat image,int cellSize = 6,int binSize = 9,int blockSize = 3,int normType  = 0,double normThreshold = 0.2,double normE = 0.0);
+
+vector3D readImage(int argc,char **argv);
+
+void writeHOGFile(vector3D HOG);
 
 bool isPixelInside(int row,int col,int x,int y)
 {
@@ -203,9 +209,9 @@ vector1D binning(Mat angle,Mat gradient,int x,int y , int binSize,int cellSize)
 
 
 
-vector1D getSingleBlockDescriptor(vector3D cellHistograms,int x,int y,int blockSize,int binSize)
+vector1D getSingleBlockDescriptor(vector3D cellHistograms,int x,int y,int blockSize)
 {
-	vector1D block(blockSize*blockSize*binSize, 0);
+	vector1D block;
 	int j,i,k,l;
 	
 	for(i = x,l = 0; i <x+blockSize;i++)
@@ -236,7 +242,7 @@ vector3D getBlockDescriptors(vector3D cellHistograms,int blockSize,int binSize)
 	{
 		for(int j = 0; j < cellHistograms[0].size(); j+=blockSize)
 		{
-			blockHist = getSingleBlockDescriptor(cellHistograms,i,j,blockSize,binSize);
+			blockHist = getSingleBlockDescriptor(cellHistograms,i,j,blockSize);
 			blockDescriptorRow.push_back(blockHist);
 		}
 		blockDescriptor.push_back(blockDescriptorRow);
@@ -341,56 +347,76 @@ vector1D l1Sqrt(vector1D array,double e)
 
 
 
-int main(int argc,char **argv)
+vector3D getHOGFeature(Mat image,int cellSize,int binSize,int blockSize,int normType,double normThreshold,double normE)
 {
-	const int cellSize = 6;
-	double min,max;
-	Mat image = imread(argv[1],CV_LOAD_IMAGE_GRAYSCALE);
+	vector3D HOG,cellHist;
 	
-	image.convertTo(image,CV_32F);
 	if(image.rows%cellSize != 0 || image.cols%cellSize == 0)
 		image = remRowCol(image,image.rows%cellSize,image.cols%cellSize);
 	
 	Mat x = diffx(image);
 	Mat y = diffy(image);
+	
 	Mat magnitude(x.size(),x.type());
 	Mat angle(x.size(),x.type());
-	Mat absx,absy;
-	
-	std::vector<int> params;
-	
-	params.push_back(CV_IMWRITE_JPEG_QUALITY);
-	params.push_back(100);
-	
 	
 	cartToPolar(x,y,magnitude,angle,true);
 	
+	magnitude = gaussianSpatialWindow(magnitude,blockSize);
+	
 	angle = addPi(angle);
-	magnitude = gaussianSpatialWindow(magnitude);
-	histogramOfCells(angle,magnitude);
 	
-	minMaxLoc(angle,&min,&max);
+	cellHist = histogramOfCells(angle,magnitude,cellSize);
 	
-	cout<<"\n\n\nmin = "<<min<<"\nmax = "<<max<<"\n\n\n";
+	HOG = getBlockDescriptors(cellHist,blockSize,binSize);
+
+	HOG = normalizeBlockDescriptor(HOG,normType,normThreshold,normE);
+	
+	return HOG;
+}
+
+
+
+vector3D readImage(int argc,char **argv)
+{
+	int cellSize = 6;
+	int binSize = 9;
+	int blockSize = 3;
+	int normType = 0;
+	double normThreshold = 0.2;
+	double normE = 0.0;
+	vector3D HOGimage;
+	Mat image;
 	
 	
-	convertScaleAbs( x, absx );
-	convertScaleAbs( y, absy );
-	imwrite("changeX.jpg",x,params);
-	imwrite("changeY.jpg",y,params);
-	imwrite("changeAbsX.jpg",absx,params);
-	imwrite("changeAbsY.jpg",absy,params);
-	imwrite("magnitude.jpg",magnitude,params);
-	imwrite("angle.jpg",angle,params);
-/*
-	cin.ignore();
-	remove("changeX.jpg");
-	remove("changeY.jpg");
-	remove("changeAbsX.jpg");
-	remove("changeAbsY.jpg");
-	remove("magnitude.jpg");
-	remove("angle.jpg");
-*/	
+	image = imread(argv[1],CV_LOAD_IMAGE_GRAYSCALE);
+	image.convertTo(image,CV_32F);
+	
+	HOGimage = getHOGFeature(image,cellSize,binSize,blockSize,normType,normThreshold,normE);
+	writeHOGFile(HOGimage);
+	return HOGimage;
+}
+
+void writeHOGFile(vector3D HOG)
+{
+	ofstream file("hog.csv");
+	int i,j,k;
+	for(i = 0; i < HOG.size();i++)
+		for(j = 0; j < HOG[0].size();j++)
+			for(k = 0; k < HOG[0][0].size();k++)
+				file <<HOG[i][j][k]<<"\n";
+	file.close();
+}
+
+int main(int argc,char **argv)
+{
+	if(argc < 2)
+	{
+		cout<<"No input Image";
+		return 0;
+	}
+	
+	readImage(argc,argv);
 	return 0;
 }
 
