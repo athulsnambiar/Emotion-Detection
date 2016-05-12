@@ -30,23 +30,23 @@ Mat remRowCol(Mat img,int r,int c);
 
 Mat addPi(Mat angle);
 
-vector3D histogramOfCells(Mat angle,Mat gradient);
+Mat gaussianSpatialWindow(Mat img,int blockSize = 3);
 
-vector1D binning(Mat angle,Mat gradient,int x,int y,int n=9);
+vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize = 6);
 
-Mat gaussianSpatialWindow(Mat img,int blockSize);
+vector1D binning(Mat angle,Mat gradient,int x,int y,int binSize=9,int cellSize = 6);
 
-vector3D getBlockDiscriptors(vector3D cellHistograms);
+vector3D getBlockDescriptors(vector3D cellHistograms,int blockSize = 3,int binSize = 9);
 
-vector1D getSingleBlockDiscriptor(vector3D cellHistograms,int x,int y);
+vector1D getSingleBlockDescriptor(vector3D cellHistograms,int x,int y,int blockSize = 3,int binSize = 9);
 
-vector3D normalizeBlockDiscriptor(vector3D blockDiscriptor);
+vector3D normalizeBlockDescriptor(vector3D blockDescriptor,int normalizeType = 0,double threshold = 0.3,double e = 0.0);
 
-vector1D l2Hys(vector1D array,double threshold = 0.2);
+vector1D l2Hys(vector1D array,double threshold = 0.2,double e = 0.0);
 
 vector1D l2Norm(vector1D array,double e = 0.0);
 
-vector1D l1sqrt(vector1D array,double e = 0.0);
+vector1D l1Sqrt(vector1D array,double e = 0.0);
 
 
 bool isPixelInside(int row,int col,int x,int y)
@@ -137,7 +137,7 @@ Mat addPi(Mat angle)
 
 }
 
-vector3D histogramOfCells(Mat angle,Mat gradient)
+vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize)
 {
 	vector3D cellHist;
 	vector2D cellHistRow;
@@ -145,11 +145,11 @@ vector3D histogramOfCells(Mat angle,Mat gradient)
 	int col = angle.cols;
 	int row = angle.rows;
 	int i,j;
-	for(i = 0; i <row;i += 6)
+	for(i = 0; i <row;i += cellSize)
 	{
-		for(j=0;j < col; j += 6)
+		for(j=0;j < col; j += cellSize)
 		{
-			hist = binning(angle,gradient,i,j);
+			hist = binning(angle,gradient,i,j,cellSize);
 			cellHistRow.push_back(hist);
 		}
 		cellHist.push_back(cellHistRow);
@@ -159,16 +159,16 @@ vector3D histogramOfCells(Mat angle,Mat gradient)
 	
 }
 
-vector1D binning(Mat angle,Mat gradient,int x,int y , int n)
+vector1D binning(Mat angle,Mat gradient,int x,int y , int binSize,int cellSize)
 {
-	vector1D hist(n, 0);
+	vector1D hist(binSize, 0);
 	int j,i;
 	float low ,high ,border,span,hspan;
 	float ang , first , second ;
-	span = 180.0/n;
+	span = 180.0/binSize;
 	hspan = span/2;
-	for(i = x; i <x+6;i++)
-		for(j=y;j < y+6; j++)
+	for(i = x; i <x+cellSize;i++)
+		for(j=y;j < y+cellSize; j++)
 		{
 			ang= angle.at<float>(i,j);
 			if(ang <= hspan)
@@ -193,7 +193,7 @@ vector1D binning(Mat angle,Mat gradient,int x,int y , int n)
 			else
 			{
 				low= 180-ang+hspan;
-				hist[n-1] += low/span * gradient.at<float>(i,j); 	
+				hist[binSize-1] += low/span * gradient.at<float>(i,j); 	
 			}  		 
 		 }				
 	return hist;
@@ -203,15 +203,14 @@ vector1D binning(Mat angle,Mat gradient,int x,int y , int n)
 
 
 
-vector1D getSingleBlockDiscriptor(vector3D cellHistograms,int x,int y)
+vector1D getSingleBlockDescriptor(vector3D cellHistograms,int x,int y,int blockSize,int binSize)
 {
-	vector1D block(81, 0);
+	vector1D block(blockSize*blockSize*binSize, 0);
 	int j,i,k,l;
 	
-	for(i = x,l = 0; i <x+3;i++)
-		for(j=y;j < y+3; j++)
-			for(k = 0; k < 9; k++)
-				block[l++] = cellHistograms[i][j][k];
+	for(i = x,l = 0; i <x+blockSize;i++)
+		for(j = y;j < y+blockSize; j++)
+			block.insert(block.end(),cellHistograms[i][j].begin(),cellHistograms[i][j].end());
 	return block;
 }
 
@@ -227,48 +226,76 @@ Mat gaussianSpatialWindow(Mat img,int blockSize)
 
 
 
-vector3D getBlockDiscriptors(vector3D cellHistograms)
+vector3D getBlockDescriptors(vector3D cellHistograms,int blockSize,int binSize)
 {
-	vector3D blockDiscriptor;
-	vector2D blockDiscriptorRow;
+	vector3D blockDescriptor;
+	vector2D blockDescriptorRow;
 	vector1D blockHist;
 	
-	for(int i = 0; i < cellHistograms.size(); i+=3)
+	for(int i = 0; i < cellHistograms.size(); i+=blockSize)
 	{
-		for(int j = 0; j < cellHistograms[0].size(); j+=3)
+		for(int j = 0; j < cellHistograms[0].size(); j+=blockSize)
 		{
-			blockHist = getSingleBlockDiscriptor(cellHistograms,i,j);
-			blockDiscriptorRow.push_back(blockHist);
+			blockHist = getSingleBlockDescriptor(cellHistograms,i,j,blockSize,binSize);
+			blockDescriptorRow.push_back(blockHist);
 		}
-		blockDiscriptor.push_back(blockDiscriptorRow);
+		blockDescriptor.push_back(blockDescriptorRow);
 	}
-	return blockDiscriptor;
+	return blockDescriptor;
 }
 
 
-vector3D normalizeBlockDiscriptor(vector3D blockDiscriptor)
+vector3D normalizeBlockDescriptor(vector3D blockDescriptor,int normalizeType,double threshold,double e)
 {
-	for(int i = 0; i < blockDiscriptor.size(); i++)
+	int i,j;
+	
+	if(normalizeType != 1 && normalizeType != 2 )
 	{
-		for(int j = 0; j < blockDiscriptor[0].size(); j++)
+		for(i = 0; i < blockDescriptor.size(); i++)
 		{
-			blockDiscriptor[i][j] = l2Hys(blockDiscriptor[i][j],0.2);
+			for(j = 0; j < blockDescriptor[0].size(); j++)
+			{
+				blockDescriptor[i][j] = l2Norm(blockDescriptor[i][j],e);
+			}
 		}
 	}
-	return blockDiscriptor;
+	
+	else if(normalizeType == 1 )
+	{
+		for(i = 0; i < blockDescriptor.size(); i++)
+		{
+			for(j = 0; j < blockDescriptor[0].size(); j++)
+			{
+				blockDescriptor[i][j] = l2Hys(blockDescriptor[i][j],threshold,e);
+			}
+		}
+	}
+	
+	else
+	{
+		for(i = 0; i < blockDescriptor.size(); i++)
+		{
+			for(j = 0; j < blockDescriptor[0].size(); j++)
+			{
+				blockDescriptor[i][j] = l1Sqrt(blockDescriptor[i][j],e);
+			}
+		}
+	}
+	
+	return blockDescriptor;
 }
 
 
-vector1D l2Hys(vector1D array,double threshold)
+vector1D l2Hys(vector1D array,double threshold,double e)
 {
 	int length = array.size();
-	array = l2Norm(array);
+	array = l2Norm(array,e);
 	for(int i = 0; i < length; i++)
 	{
 		if(array[i] >= 0.2)
 			array[i] = 0.2;
 	}
-	array = l2Norm(array);
+	array = l2Norm(array,e);
 	return array;
 }
 
@@ -293,7 +320,7 @@ vector1D l2Norm(vector1D array,double e)
 }
 
 
-vector1D l1sqrt(vector1D array,double e)
+vector1D l1Sqrt(vector1D array,double e)
 {
 	double sum = 0;
 	int length = array.size();
@@ -339,7 +366,7 @@ int main(int argc,char **argv)
 	cartToPolar(x,y,magnitude,angle,true);
 	
 	angle = addPi(angle);
-	magnitude = gaussianSpatialWindow(magnitude,3);
+	magnitude = gaussianSpatialWindow(magnitude);
 	histogramOfCells(angle,magnitude);
 	
 	minMaxLoc(angle,&min,&max);
