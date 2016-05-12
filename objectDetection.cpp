@@ -10,22 +10,44 @@
 using namespace std;
 using namespace cv;
 
+typedef std::vector<double> vector1D;
+typedef std::vector< std::vector<double> > vector2D;
+typedef std::vector< std::vector< std::vector<double> > > vector3D;
+
+
+
 bool isPixelInside(int row,int col,int x,int y);
+
 Mat diffsizekernel(Mat img, int f, int c);
+
 Mat diffx(Mat img);
+
 Mat diffy(Mat img); 
+
 string type2str(int type);
+
 Mat remRowCol(Mat img,int r,int c);
+
 Mat addPi(Mat angle);
-std::vector< std::vector< std::vector<double> > > histogramOfCells(Mat angle,Mat gradient);
-std::vector<double> binning(Mat angle,Mat gradient,int x,int y);
+
+vector3D histogramOfCells(Mat angle,Mat gradient);
+
+vector1D binning(Mat angle,Mat gradient,int x,int y);
+
 Mat gaussianSpatialWindow(Mat img,int blockSize);
-std::vector< std::vector< std::vector<double> > > getBlockDiscriptors(std::vector< std::vector< std::vector<double> > > cellHistograms);
-std::vector<double> getSingleBlockDiscriptor(std::vector< std::vector< std::vector<double> > > cellHistograms,int x,int y);
-std::vector< std::vector< std::vector<double> > > normalizeBlockDiscriptor(std::vector< std::vector< std::vector<double> > > blockDiscriptor);
-std::vector<double> l2Hys(std::vector<double> array,double threshold = 0.2);
-std::vector<double> l2Norm(std::vector<double> array,double e = 0.0);
-std::vector<double> l1sqrt(std::vector<double> array,double e = 0.0);
+
+vector3D getBlockDiscriptors(vector3D cellHistograms);
+
+vector1D getSingleBlockDiscriptor(vector3D cellHistograms,int x,int y);
+
+vector3D normalizeBlockDiscriptor(vector3D blockDiscriptor);
+
+vector1D l2Hys(vector1D array,double threshold = 0.2);
+
+vector1D l2Norm(vector1D array,double e = 0.0);
+
+vector1D l1sqrt(vector1D array,double e = 0.0);
+
 
 bool isPixelInside(int row,int col,int x,int y)
 {
@@ -115,11 +137,11 @@ Mat addPi(Mat angle)
 
 }
 
-std::vector< std::vector< std::vector<double> > > histogramOfCells(Mat angle,Mat gradient)
+vector3D histogramOfCells(Mat angle,Mat gradient)
 {
-	std::vector< std::vector< std::vector<double> > > cellHist;
-	std::vector< std::vector<double> > cellHistRow;
-	std::vector<double> hist;
+	vector3D cellHist;
+	vector2D cellHistRow;
+	vector1D hist;
 	int col = angle.cols;
 	int row = angle.rows;
 	int i,j;
@@ -137,9 +159,9 @@ std::vector< std::vector< std::vector<double> > > histogramOfCells(Mat angle,Mat
 	
 }
 
-std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
+vector1D binning(Mat angle,Mat gradient,int x,int y)
 {
-	std::vector<double> hist(9, 0);
+	vector1D hist(9, 0);
 	int j,i;
 	float low ,high ,border;
 	float ang , first , second ;
@@ -179,9 +201,9 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
 
 
 
-std::vector<double> getSingleBlockDiscriptor(std::vector< std::vector< std::vector<double> > > cellHistograms,int x,int y)
+vector1D getSingleBlockDiscriptor(vector3D cellHistograms,int x,int y)
 {
-	std::vector<double> block(81, 0);
+	vector1D block(81, 0);
 	int j,i,k,l;
 	
 	for(i = x,l = 0; i <x+3;i++)
@@ -203,11 +225,11 @@ Mat gaussianSpatialWindow(Mat img,int blockSize)
 
 
 
-std::vector< std::vector< std::vector<double> > > getBlockDiscriptors(std::vector< std::vector< std::vector<double> > > cellHistograms)
+vector3D getBlockDiscriptors(vector3D cellHistograms)
 {
-	std::vector< std::vector< std::vector<double> > > blockDiscriptor;
-	std::vector< std::vector<double> > blockDiscriptorRow;
-	std::vector<double> blockHist;
+	vector3D blockDiscriptor;
+	vector2D blockDiscriptorRow;
+	vector1D blockHist;
 	
 	for(int i = 0; i < cellHistograms.size(); i+=3)
 	{
@@ -222,7 +244,7 @@ std::vector< std::vector< std::vector<double> > > getBlockDiscriptors(std::vecto
 }
 
 
-std::vector< std::vector< std::vector<double> > > normalizeBlockDiscriptor(std::vector< std::vector< std::vector<double> > > blockDiscriptor)
+vector3D normalizeBlockDiscriptor(vector3D blockDiscriptor)
 {
 	for(int i = 0; i < blockDiscriptor.size(); i++)
 	{
@@ -235,7 +257,7 @@ std::vector< std::vector< std::vector<double> > > normalizeBlockDiscriptor(std::
 }
 
 
-std::vector<double> l2Hys(std::vector<double> array,double threshold)
+vector1D l2Hys(vector1D array,double threshold)
 {
 	int length = array.size();
 	array = l2Norm(array);
@@ -249,7 +271,7 @@ std::vector<double> l2Hys(std::vector<double> array,double threshold)
 }
 
 
-std::vector<double> l2Norm(std::vector<double> array,double e)
+vector1D l2Norm(vector1D array,double e)
 {
 	double sum = 0;
 	int length = array.size();
@@ -269,7 +291,7 @@ std::vector<double> l2Norm(std::vector<double> array,double e)
 }
 
 
-std::vector<double> l1sqrt(std::vector<double> array,double e)
+vector1D l1sqrt(vector1D array,double e)
 {
 	double sum = 0;
 	int length = array.size();
