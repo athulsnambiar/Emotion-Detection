@@ -32,7 +32,7 @@ Mat addPi(Mat angle);
 
 vector3D histogramOfCells(Mat angle,Mat gradient);
 
-vector1D binning(Mat angle,Mat gradient,int x,int y);
+vector1D binning(Mat angle,Mat gradient,int x,int y,int n=9);
 
 Mat gaussianSpatialWindow(Mat img,int blockSize);
 
@@ -159,39 +159,41 @@ vector3D histogramOfCells(Mat angle,Mat gradient)
 	
 }
 
-vector1D binning(Mat angle,Mat gradient,int x,int y)
+vector1D binning(Mat angle,Mat gradient,int x,int y , int n)
 {
-	vector1D hist(9, 0);
+	vector1D hist(n, 0);
 	int j,i;
-	float low ,high ,border;
+	float low ,high ,border,span,hspan;
 	float ang , first , second ;
+	span = 180.0/n;
+	hspan = span/2;
 	for(i = x; i <x+6;i++)
 		for(j=y;j < y+6; j++)
 		{
 			ang= angle.at<float>(i,j);
-			if(ang <= 10.0)
-			hist[0] +=(ang+10)/20 * gradient.at<float>(i,j);
-			else if(ang > 10.0 && ang < 170.0)
+			if(ang <= hspan)
+			 hist[0] +=(ang+hspan)/span * gradient.at<float>(i,j);
+			else if(ang > hspan && ang < (180 - hspan))
 			{
-				low= ang-10;
-				high= ang+10;
-				int index =(int)ang/20;
-				border = ang - (int)ang%20;
-				if(low > index*20.0)
+				low= ang-hspan;
+				high= ang+hspan;
+				int index =(int)ang/span;
+				border = ang - (int)ang%(int)span;
+				if(low > index*span)
 				{
-					border= border + 20.0;
-					index = (int)border/20;
+					border= border + span;
+					index = (int)border/span;
 				}
 				
-				first = (border-low)/20;
-				second = (high-border)/20;
+				first = (border-low)/span;
+				second = (high-border)/span;
 				hist[index] +=second*gradient.at<float>(i,j);
 				hist[index-1] +=first*gradient.at<float>(i,j);
 			}			
 			else
 			{
-				low= 180-ang+10;
-				hist[8] += low/20 * gradient.at<float>(i,j); 	
+				low= 180-ang+hspan;
+				hist[n-1] += low/span * gradient.at<float>(i,j); 	
 			}  		 
 		 }				
 	return hist;
