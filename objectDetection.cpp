@@ -25,7 +25,7 @@ std::vector<double> getSingleBlockDiscriptor(std::vector< std::vector< std::vect
 std::vector< std::vector< std::vector<double> > > normalizeBlockDiscriptor(std::vector< std::vector< std::vector<double> > > blockDiscriptor);
 std::vector<double> l2Hys(std::vector<double> array,double threshold = 0.2);
 std::vector<double> l2Norm(std::vector<double> array,double e = 0.0);
-
+std::vector<double> l1sqrt(std::vector<double> array,double e = 0.0);
 
 bool isPixelInside(int row,int col,int x,int y)
 {
@@ -263,6 +263,26 @@ std::vector<double> l2Norm(std::vector<double> array,double e)
 	for(int i = 0; i < length; i++)
 	{
 		array[i] /= sum;
+	}
+	
+	return array;
+}
+
+
+std::vector<double> l1sqrt(std::vector<double> array,double e)
+{
+	double sum = 0;
+	int length = array.size();
+	for(int i = 0; i < length; i++)
+	{
+		sum += array[i];
+	}
+	sum += e;
+	
+	
+	for(int i = 0; i < length; i++)
+	{
+		array[i] = sqrt(array[i]/sum);
 	}
 	
 	return array;
