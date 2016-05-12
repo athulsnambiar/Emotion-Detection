@@ -22,6 +22,10 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y);
 Mat gaussianSpatialWindow(Mat img,int blockSize);
 std::vector< std::vector< std::vector<double> > > getBlockDiscriptors(std::vector< std::vector< std::vector<double> > > cellHistograms);
 std::vector<double> getSingleBlockDiscriptor(std::vector< std::vector< std::vector<double> > > cellHistograms,int x,int y);
+std::vector< std::vector< std::vector<double> > > normalizeBlockDiscriptor(std::vector< std::vector< std::vector<double> > > blockDiscriptor);
+std::vector<double> l2Hys(std::vector<double> array,double threshold = 0.2);
+std::vector<double> l2Norm(std::vector<double> array,double e = 0.0);
+
 
 bool isPixelInside(int row,int col,int x,int y)
 {
@@ -174,6 +178,7 @@ std::vector<double> binning(Mat angle,Mat gradient,int x,int y)
 
 
 
+
 std::vector<double> getSingleBlockDiscriptor(std::vector< std::vector< std::vector<double> > > cellHistograms,int x,int y)
 {
 	std::vector<double> block(81, 0);
@@ -215,6 +220,55 @@ std::vector< std::vector< std::vector<double> > > getBlockDiscriptors(std::vecto
 	}
 	return blockDiscriptor;
 }
+
+
+std::vector< std::vector< std::vector<double> > > normalizeBlockDiscriptor(std::vector< std::vector< std::vector<double> > > blockDiscriptor)
+{
+	for(int i = 0; i < blockDiscriptor.size(); i++)
+	{
+		for(int j = 0; j < blockDiscriptor[0].size(); j++)
+		{
+			blockDiscriptor[i][j] = l2Hys(blockDiscriptor[i][j],0.2);
+		}
+	}
+	return blockDiscriptor;
+}
+
+
+std::vector<double> l2Hys(std::vector<double> array,double threshold)
+{
+	int length = array.size();
+	array = l2Norm(array);
+	for(int i = 0; i < length; i++)
+	{
+		if(array[i] >= 0.2)
+			array[i] = 0.2;
+	}
+	array = l2Norm(array);
+	return array;
+}
+
+
+std::vector<double> l2Norm(std::vector<double> array,double e)
+{
+	double sum = 0;
+	int length = array.size();
+	for(int i = 0; i < length; i++)
+	{
+		sum += array[i]*array[i];
+	}
+	sum += e*e;
+	sum = sqrt(sum);
+	
+	for(int i = 0; i < length; i++)
+	{
+		array[i] /= sum;
+	}
+	
+	return array;
+}
+
+
 
 int main(int argc,char **argv)
 {
