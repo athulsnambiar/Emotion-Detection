@@ -33,9 +33,9 @@ Mat addPi(Mat angle);
 
 Mat gaussianSpatialWindow(Mat img,int blockSize = 3);
 
-vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize = 6);
+vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize = 6,int binSize = 9);
 
-vector1D binning(Mat angle,Mat gradient,int x,int y,int binSize=9,int cellSize = 6);
+vector1D binning(Mat angle,Mat gradient,int x,int y,int cellSize = 6,int binSize=9);
 
 vector3D getBlockDescriptors(vector3D cellHistograms,int blockSize = 3,int binSize = 9);
 
@@ -143,7 +143,7 @@ Mat addPi(Mat angle)
 
 }
 
-vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize)
+vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize,int binSize)
 {
 	vector3D cellHist;
 	vector2D cellHistRow;
@@ -153,9 +153,10 @@ vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize)
 	int i,j;
 	for(i = 0; i <row;i += cellSize)
 	{
+		cellHistRow.clear();
 		for(j=0;j < col; j += cellSize)
 		{
-			hist = binning(angle,gradient,i,j,cellSize);
+			hist = binning(angle,gradient,i,j,cellSize,binSize);
 			cellHistRow.push_back(hist);
 		}
 		cellHist.push_back(cellHistRow);
@@ -165,7 +166,7 @@ vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize)
 	
 }
 
-vector1D binning(Mat angle,Mat gradient,int x,int y , int binSize,int cellSize)
+vector1D binning(Mat angle,Mat gradient,int x,int y , int cellSize, int binSize)
 {
 	vector1D hist(binSize, 0);
 	int j,i;
@@ -238,9 +239,10 @@ vector3D getBlockDescriptors(vector3D cellHistograms,int blockSize,int binSize)
 	vector2D blockDescriptorRow;
 	vector1D blockHist;
 	
-	for(int i = 0; i < cellHistograms.size(); i+=blockSize)
+	for(int i = 0; i < cellHistograms.size()-blockSize+1; i++)
 	{
-		for(int j = 0; j < cellHistograms[0].size(); j+=blockSize)
+		blockDescriptorRow.clear();
+		for(int j = 0; j < cellHistograms[0].size()-blockSize+1; j++)
 		{
 			blockHist = getSingleBlockDescriptor(cellHistograms,i,j,blockSize);
 			blockDescriptorRow.push_back(blockHist);
@@ -351,7 +353,8 @@ vector3D getHOGFeature(Mat image,int cellSize,int binSize,int blockSize,int norm
 {
 	vector3D HOG,cellHist;
 	
-	if(image.rows%cellSize != 0 || image.cols%cellSize == 0)
+	
+	if(image.rows%cellSize != 0 || image.cols%cellSize != 0)
 		image = remRowCol(image,image.rows%cellSize,image.cols%cellSize);
 	
 	Mat x = diffx(image);
@@ -366,7 +369,7 @@ vector3D getHOGFeature(Mat image,int cellSize,int binSize,int blockSize,int norm
 	
 	angle = addPi(angle);
 	
-	cellHist = histogramOfCells(angle,magnitude,cellSize);
+	cellHist = histogramOfCells(angle,magnitude,cellSize,binSize);
 	
 	HOG = getBlockDescriptors(cellHist,blockSize,binSize);
 
@@ -379,9 +382,9 @@ vector3D getHOGFeature(Mat image,int cellSize,int binSize,int blockSize,int norm
 
 vector3D readImage(int argc,char **argv)
 {
-	int cellSize = 6;
+	int cellSize = 8;
 	int binSize = 9;
-	int blockSize = 3;
+	int blockSize = 2;
 	int normType = 0;
 	double normThreshold = 0.2;
 	double normE = 0.0;
@@ -393,7 +396,7 @@ vector3D readImage(int argc,char **argv)
 	image.convertTo(image,CV_32F);
 	
 	HOGimage = getHOGFeature(image,cellSize,binSize,blockSize,normType,normThreshold,normE);
-	writeHOGFile(HOGimage);
+	//writeHOGFile(HOGimage);
 	return HOGimage;
 }
 
