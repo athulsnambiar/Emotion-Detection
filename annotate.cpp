@@ -103,7 +103,14 @@ int storeAttributesToCSV(int noOfFaces,int emotion)
 			for(int k = 0; k < j; k++)
 				outfile<<length(feature.part(j),feature.part(k))<<","<<slope(feature.part(j),feature.part(k))<<",";
 
-		outfile<<emotion<<"\n";
+		if(emotion == 0)
+			outfile<<"neutral"<<"\n";
+		else if(emotion == 1)
+			outfile<<"happy"<<"\n";
+		else if(emotion == 2)
+			outfile<<"sad"<<"\n";
+		else if(emotion == 3)
+			outfile<<"surprise"<<"\n";
 		remove(s.str().c_str());
 	}
 	outfile.close();
