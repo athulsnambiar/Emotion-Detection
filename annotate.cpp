@@ -92,6 +92,7 @@ int storeAttributesToCSV(int noOfFaces,int emotion)
 		std::vector<dlib::rectangle> faceRectangles = detector(img);
 		if(faceRectangles.size() <= 0)
 		{
+			remove(s.str().c_str());
 			continue;
 		}
 		std::vector<full_object_detection> facialFeatures;
@@ -103,6 +104,7 @@ int storeAttributesToCSV(int noOfFaces,int emotion)
 				outfile<<length(feature.part(j),feature.part(k))<<","<<slope(feature.part(j),feature.part(k))<<",";
 
 		outfile<<emotion<<"\n";
+		remove(s.str().c_str());
 	}
 	outfile.close();
 	infile.close();
@@ -142,21 +144,6 @@ double slope(point a,point b)
 }
 
 
-void removePhotos()
-{
-	int i;
-	stringstream s;
-
-	for(i = 0; i < faceNumber; i++)
-	{
-		s.str("");
-		s << "face" << i << ".jpg";
-		remove(s.str().c_str());
-	}
-}
-
-
-
 int main(int argc,char **argv)
 {
 	int noOfFaces = 0;
@@ -172,6 +159,5 @@ int main(int argc,char **argv)
 		cout<<"image "<<(i-1)<<"\t"<<argv[i]<<"\n";
 	}
 	storeAttributesToCSV(noOfFaces,(int)(argv[1][0]-'0'));
-	removePhotos();
 	return 0;
 }
