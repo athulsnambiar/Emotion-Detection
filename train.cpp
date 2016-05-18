@@ -25,7 +25,7 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 bool rowsAndCols(char *name,int &row,int &col)
 {
 	ifstream file(name);
-	
+
 	if (!file)
 	{
 		cout << "can not open file" << endl;
@@ -45,7 +45,7 @@ bool rowsAndCols(char *name,int &row,int &col)
 			else if(c == ',')
 				col++;
 		}
-		
+
 		col = col/row;
 		file.close();
 		return true;
@@ -57,7 +57,7 @@ bool rowsAndCols(char *name,int &row,int &col)
 
 
 
-std::vector <int> getLabelsCSV(char * name)
+std::vector <int> getLabelsCSV(char *name)
 {
 
 	std::ifstream  file(name);
@@ -66,7 +66,7 @@ std::vector <int> getLabelsCSV(char * name)
 	rowsAndCols(name,row,col);
 	std::string line;
 	std::vector<int> labels;
-	
+
 	for(r = 0; r < row; r++)
 	{
 		getline(file,line);
@@ -76,12 +76,18 @@ std::vector <int> getLabelsCSV(char * name)
 			continue;
 		for(c = 0; c < col; c++)
 		{
-			
+
 			std::getline(lineStream,cell,',');
 			if(c != col-1)
 				continue;
-			stringstream cell1(cell);
-			cell1 >> cellValue;
+			if(cell.compare("neutral") == 0)
+				cellValue = 0;
+			else if(cell.compare("happy") == 0)
+				cellValue = 1;
+			else if(cell.compare("sad") == 0)
+				cellValue = 2;
+			else if(cell.compare("surprise") == 0)
+				cellValue = 3;
 			labels.push_back(cellValue);
 		}
 	}
@@ -99,7 +105,7 @@ std::vector<std::vector <float> > getAttributesCSV(char * name)
 	rowsAndCols(name,row,col);
 	std::string line;
 	std::vector< std::vector <float> > Matrix;
-	
+
 	for(r = 0; r < row; r++)
 	{
 		getline(file,line);
@@ -130,8 +136,10 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 	std::vector<std::vector <float> > matrix = getAttributesCSV(filename);
 	std::vector <int> matLabel = getLabelsCSV(filename);
 	sample_type temp;
-	
-	
+
+	cout << "matrix.size(): "<< matrix.size() << endl;
+	cout << "matrixLab.size(): "<< matLabel.size() << endl;
+	int x = 0,y = 0;
 	for(int i = 0; i < matrix.size();i++)
 	{
 		for(int j = 0; j < matrix[0].size();j++)
@@ -139,17 +147,22 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 			temp(j) = matrix[i][j];
 		}
 		//samples.push_back(temp);
-		if(matLabel[i] == 0)
-		{	
+		if(matLabel[i] == 1)
+		{
 			labels.push_back(+1);
 			samples.push_back(temp);
+			x++;
 		}
-		if(matLabel[i] == 1)
-		{	
+		if(matLabel[i] == 2)
+		{
 			labels.push_back(-1);
 			samples.push_back(temp);
+			y++;
 		}
 	}
+
+	cout << "Happy: "<< x << endl;
+	cout << "Sad  : "<< y << endl;
 }
 
 int main()
@@ -158,20 +171,21 @@ int main()
 	{
 		std::vector<sample_type> samples;
 		std::vector<double> labels;
-		
+
 		generateData(samples, labels);
 
 		cout << "samples.size(): "<< samples.size() << endl;
-		
+		cout << "labels.size() : "<< labels.size() << endl;
+
 		typedef radial_basis_kernel<sample_type> kernel_type;
-		
+
 		vector_normalizer<sample_type> normalizer;
-		
+
 		normalizer.train(samples);
-		
+
 		for (unsigned long i = 0; i < samples.size(); ++i)
 		samples[i] = normalizer(samples[i]);
-		
+
 		randomize_samples(samples, labels);
 		svm_nu_trainer<kernel_type> trainer;
 /*
@@ -186,9 +200,9 @@ int main()
 			{
 				trainer.set_kernel(kernel_type(gamma));
 				trainer.set_nu(nu);
-	
+
 				cout << "gamma: " << gamma << "	nu: " << nu;
-	
+
 				accuracy = cross_validate_trainer_threaded(trainer, samples, labels, 3,8);
 				cout << "	 cross validation accuracy: "<<accuracy(0)<<"\t"<<accuracy(0)<<"\n";
 				if(max1 <= accuracy(0) && max2 <= accuracy(1))
@@ -198,38 +212,38 @@ int main()
 					maxg = gamma;
 					maxn = nu;
 				}
-				
+
 			}
 			cout
 			cout<< max_nu<<"\n\n";
 		}
 		cout<<"\n\n\nAccuracy values                             "<<max1<<"\t"<<max2<<"\n\n\n";
 		cout<<"\n\n\nValues of gamma and nu for maximum accuracy "<<maxg<<"\t"<<maxn<<"\n\n\n";
-	
+
 		trainer.set_kernel(kernel_type(maxg));
 		trainer.set_nu(maxn);
-		
+
 	//	gamma = 1.4641e-05
 	//	nu    = 0.0498789
 
-*/		
+*/
 		//comment this line if cross validating by your self
 		trainer.set_kernel(kernel_type(1.4641e-05));
 		trainer.set_nu(0.0498789);
-	
-		typedef probabilistic_decision_function<kernel_type> probabilistic_funct_type;  
+
+		typedef probabilistic_decision_function<kernel_type> probabilistic_funct_type;
 		typedef normalized_function<probabilistic_funct_type> pfunct_type;
 
-		pfunct_type learned_pfunct; 
+		pfunct_type learned_pfunct;
 		learned_pfunct.normalizer = normalizer;
 		learned_pfunct.function = train_probabilistic_decision_function(trainer, samples, labels, 3);
-	
+
 		cout << "\nnumber of support vectors in our learned_pfunct is "<< learned_pfunct.function.decision_funct.basis_vectors.size() << endl;
-	
+
 		serialize("emotion_predictor_data.dat") << learned_pfunct;
 
 	}
-		
+
 	catch (std::exception& e)
 	{
 		cout << "exception thrown!" << endl;
