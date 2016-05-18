@@ -24,3 +24,5 @@ add_executable( emotionRecognitionMulticlass.exe emotionRecognitionMulticlass.cp
 target_link_libraries( emotionRecognitionMulticlass.exe dlib)
 add_executable( objectDetection.exe objectDetection.cpp )
 target_link_libraries( objectDetection.exe ${OpenCV_LIBS})
+add_executable( train4classProbablity.exe train4classProbablity.cpp )
+target_link_libraries( train4classProbablity.exe dlib)
