@@ -28,3 +28,8 @@ add_executable( train4ClassProbablityOVO.exe train4ClassProbablityOVO.cpp )
 target_link_libraries( train4ClassProbablityOVO.exe dlib)
 add_executable( emotionRecognition4ClassProbablityOVO.exe emotionRecognition4ClassProbablityOVO.cpp )
 target_link_libraries( emotionRecognition4ClassProbablityOVO.exe dlib)
+add_executable( train4ClassProbablityOVA.exe train4ClassProbablityOVA.cpp )
+target_link_libraries( train4ClassProbablityOVA.exe dlib)
+add_executable( emotionRecognition4ClassProbablityOVA.exe emotionRecognition4ClassProbablityOVA.cpp )
+target_link_libraries( emotionRecognition4ClassProbablityOVA.exe dlib)
+
