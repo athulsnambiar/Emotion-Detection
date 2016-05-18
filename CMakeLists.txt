@@ -6,8 +6,9 @@ include(/home/qburst/opencv3/dlib-18.18/dlib/cmake)
 set(FaceDerection_VERSION_MAJOR 1)
 set(FaceDerection_VERSION_MINOR 0)
 
-#SET(CMAKE_CXX_FLAGS_DISTRIBUTION "-O3")
-#SET(CMAKE_C_FLAGS_DISTRIBUTION "-O3")
+SET(CMAKE_CXX_FLAGS_DISTRIBUTION "-O3")
+SET(CMAKE_C_FLAGS_DISTRIBUTION "-O3")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 link_directories("${CMAKE_BINARY_DIR}/res")
 
 find_package( OpenCV REQUIRED )
