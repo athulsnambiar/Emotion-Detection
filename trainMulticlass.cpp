@@ -26,7 +26,7 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 bool rowsAndCols(char *name,int &row,int &col)
 {
 	ifstream file(name);
-	
+
 	if (!file)
 	{
 		cout << "can not open file" << endl;
@@ -46,7 +46,7 @@ bool rowsAndCols(char *name,int &row,int &col)
 			else if(c == ',')
 				col++;
 		}
-		
+
 		col = col/row;
 		file.close();
 		return true;
@@ -67,7 +67,7 @@ std::vector <int> getLabelsCSV(char * name)
 	rowsAndCols(name,row,col);
 	std::string line;
 	std::vector<int> labels;
-	
+
 	for(r = 0; r < row; r++)
 	{
 		getline(file,line);
@@ -77,12 +77,18 @@ std::vector <int> getLabelsCSV(char * name)
 			continue;
 		for(c = 0; c < col; c++)
 		{
-			
+
 			std::getline(lineStream,cell,',');
 			if(c != col-1)
 				continue;
-			stringstream cell1(cell);
-			cell1 >> cellValue;
+			if(cell.compare("neutral") == 0)
+				cellValue = 0;
+			else if(cell.compare("happy") == 0)
+				cellValue = 1;
+			else if(cell.compare("sad") == 0)
+				cellValue = 2;
+			else if(cell.compare("surprise") == 0)
+				cellValue = 3;
 			labels.push_back(cellValue);
 		}
 	}
@@ -100,7 +106,7 @@ std::vector<std::vector <float> > getAttributesCSV(char * name)
 	rowsAndCols(name,row,col);
 	std::string line;
 	std::vector< std::vector <float> > Matrix;
-	
+
 	for(r = 0; r < row; r++)
 	{
 		getline(file,line);
@@ -131,8 +137,8 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 	std::vector<std::vector <float> > matrix = getAttributesCSV(filename);
 	std::vector <int> matLabel = getLabelsCSV(filename);
 	sample_type temp;
-	
-	
+
+
 	for(int i = 0; i < matrix.size();i++)
 	{
 		for(int j = 0; j < matrix[0].size();j++)
@@ -140,7 +146,7 @@ void generateData(std::vector<sample_type>& samples,std::vector<double>& labels)
 			temp(j) = matrix[i][j];
 		}
 		samples.push_back(temp);
-		labels.push_back(matLabel[i]);
+		labels.push_back((double)matLabel[i]);
 	}
 }
 
@@ -151,47 +157,46 @@ int main()
 	{
 		std::vector<sample_type> samples;
 		std::vector<double> labels;
-		
+
 		generateData(samples, labels);
-		
+
 		cout << "samples.size(): "<< samples.size() << endl;
-		
+		cout << "labels.size() : "<< labels.size() << endl;
+
 		typedef one_vs_one_trainer<any_trainer<sample_type> > ovo_trainer;
-		
+
 		ovo_trainer trainer;
-		
+
 		typedef radial_basis_kernel<sample_type> rbf_kernel;
-		
+
 		svm_nu_trainer<rbf_kernel> rbf_trainer;
-		
+
 		rbf_trainer.set_kernel(rbf_kernel(1.4641e-05));
 		rbf_trainer.set_nu(0.0498789);
-		
+
 		cout << "Trainer: "<< samples.size() << endl;
 		trainer.set_trainer(rbf_trainer);
 		cout << "RBF trainer Set\n\n";
 		cout << "Randomizing Samples set\n\n";
 		randomize_samples(samples, labels);
-		
+
 		//dont cross validate if the database is large. process will run out of heap space
-		//cout << "cross validation: \n" << cross_validate_multiclass_trainer(trainer, samples, labels, 3) << endl;
-		
+		cout << "cross validation: \n" << cross_validate_multiclass_trainer(trainer, samples, labels, 3) << endl;
+
 		cout << "Creating One vs One Training Function\n\n";
 		one_vs_one_decision_function<ovo_trainer> df = trainer.train(samples, labels);
-		
+
 		one_vs_one_decision_function<ovo_trainer, decision_function<rbf_kernel> > df2;
 		cout << "Preparing to write on disk\n\n";
 		df2 = df;
 		cout << "Writing training Data on disk\n\n";
 		serialize("multiple_emotion_data.dat") << df2;
-		
+
 	}
 	catch (std::exception& e)
 	{
 		cout << "exception thrown!" << endl;
 		cout << e.what() << endl;
 	}
-		
+
 }
-
-
