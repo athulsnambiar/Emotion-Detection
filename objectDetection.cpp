@@ -7,6 +7,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <cmath>
+#include <stdlib.h>
 
 using namespace std;
 using namespace cv;
@@ -23,7 +24,7 @@ Mat diffsizekernel(Mat img, int f, int c);
 
 Mat diffx(Mat img);
 
-Mat diffy(Mat img); 
+Mat diffy(Mat img);
 
 string type2str(int type);
 
@@ -63,25 +64,25 @@ bool isPixelInside(int row,int col,int x,int y)
 }
 
 
-Mat diffsizekernel(Mat img, int f, int c) 
+Mat diffsizekernel(Mat img, int f, int c)
 {
 	float dkernel[] =  {-1, 0, 1};
 
 	Mat kernel = Mat(f, c, CV_32FC1, dkernel);
 
 	Mat imgDiff;
-	
+
 	filter2D( img, imgDiff,-1,kernel,Point(-1,-1) );
 
 	return imgDiff;
 }
 
-Mat diffy(Mat img) 
+Mat diffy(Mat img)
 {
 	return diffsizekernel(img, 3, 1);
 }
 
-Mat diffx(Mat img) 
+Mat diffx(Mat img)
 {
 	return diffsizekernel(img, 1, 3);
 }
@@ -115,16 +116,16 @@ Mat remRowCol(Mat img,int r,int c)
 {
 	int col = img.cols;
 	int row = img.rows;
-	
+
 	Mat image(row - r, col - c,CV_32FC1);
-	
+
 	int i,j;
 	for(j=c/2;j < (col - c/2);j++)
 		for(i=r/2;i<(row - r/2);i++)
 			image.at<float>(i,j) = img.at<float>(i,j+1);
-	  
+
 	return image;
-	
+
 }
 
 
@@ -133,7 +134,7 @@ Mat addPi(Mat angle)
 
 	int col = angle.cols;
 	int row = angle.rows;
-	
+
 	int i,j;
 	for(j=0;j < col;j++)
 		for(i=0;i<row;i++)
@@ -162,8 +163,8 @@ vector3D histogramOfCells(Mat angle,Mat gradient,int cellSize,int binSize)
 		cellHist.push_back(cellHistRow);
 	}
 	return cellHist;
-	
-	
+
+
 }
 
 vector1D binning(Mat angle,Mat gradient,int x,int y , int cellSize, int binSize)
@@ -191,18 +192,18 @@ vector1D binning(Mat angle,Mat gradient,int x,int y , int cellSize, int binSize)
 					border= border + span;
 					index = (int)border/span;
 				}
-				
+
 				first = (border-low)/span;
 				second = (high-border)/span;
 				hist[index] +=second*gradient.at<float>(i,j);
 				hist[index-1] +=first*gradient.at<float>(i,j);
-			}			
+			}
 			else
 			{
 				low= 180-ang+hspan;
-				hist[binSize-1] += low/span * gradient.at<float>(i,j); 	
-			}  		 
-		 }				
+				hist[binSize-1] += low/span * gradient.at<float>(i,j);
+			}
+		 }
 	return hist;
 }
 
@@ -214,7 +215,7 @@ vector1D getSingleBlockDescriptor(vector3D cellHistograms,int x,int y,int blockS
 {
 	vector1D block;
 	int j,i,k,l;
-	
+
 	for(i = x,l = 0; i <x+blockSize;i++)
 		for(j = y;j < y+blockSize; j++)
 			block.insert(block.end(),cellHistograms[i][j].begin(),cellHistograms[i][j].end());
@@ -238,7 +239,7 @@ vector3D getBlockDescriptors(vector3D cellHistograms,int blockSize,int binSize)
 	vector3D blockDescriptor;
 	vector2D blockDescriptorRow;
 	vector1D blockHist;
-	
+
 	for(int i = 0; i < cellHistograms.size()-blockSize+1; i++)
 	{
 		blockDescriptorRow.clear();
@@ -256,7 +257,7 @@ vector3D getBlockDescriptors(vector3D cellHistograms,int blockSize,int binSize)
 vector3D normalizeBlockDescriptor(vector3D blockDescriptor,int normalizeType,double threshold,double e)
 {
 	int i,j;
-	
+
 	if(normalizeType != 1 && normalizeType != 2 )
 	{
 		for(i = 0; i < blockDescriptor.size(); i++)
@@ -267,7 +268,7 @@ vector3D normalizeBlockDescriptor(vector3D blockDescriptor,int normalizeType,dou
 			}
 		}
 	}
-	
+
 	else if(normalizeType == 1 )
 	{
 		for(i = 0; i < blockDescriptor.size(); i++)
@@ -278,7 +279,7 @@ vector3D normalizeBlockDescriptor(vector3D blockDescriptor,int normalizeType,dou
 			}
 		}
 	}
-	
+
 	else
 	{
 		for(i = 0; i < blockDescriptor.size(); i++)
@@ -289,7 +290,7 @@ vector3D normalizeBlockDescriptor(vector3D blockDescriptor,int normalizeType,dou
 			}
 		}
 	}
-	
+
 	return blockDescriptor;
 }
 
@@ -318,12 +319,12 @@ vector1D l2Norm(vector1D array,double e)
 	}
 	sum += e*e;
 	sum = sqrt(sum);
-	
+
 	for(int i = 0; i < length; i++)
 	{
 		array[i] /= sum;
 	}
-	
+
 	return array;
 }
 
@@ -337,13 +338,13 @@ vector1D l1Sqrt(vector1D array,double e)
 		sum += array[i];
 	}
 	sum += e;
-	
-	
+
+
 	for(int i = 0; i < length; i++)
 	{
 		array[i] = sqrt(array[i]/sum);
 	}
-	
+
 	return array;
 }
 
@@ -352,29 +353,30 @@ vector1D l1Sqrt(vector1D array,double e)
 vector3D getHOGFeature(Mat image,int cellSize,int binSize,int blockSize,int normType,double normThreshold,double normE)
 {
 	vector3D HOG,cellHist;
-	
-	
+
+
 	if(image.rows%cellSize != 0 || image.cols%cellSize != 0)
 		image = remRowCol(image,image.rows%cellSize,image.cols%cellSize);
-	
-	Mat x = diffx(image);
-	Mat y = diffy(image);
-	
+
+	Mat x,y;
+	x = diffx(image);
+	y = diffy(image);
+
 	Mat magnitude(x.size(),x.type());
 	Mat angle(x.size(),x.type());
-	
+
 	cartToPolar(x,y,magnitude,angle,true);
-	
+
 	magnitude = gaussianSpatialWindow(magnitude,blockSize);
-	
+
 	angle = addPi(angle);
-	
+
 	cellHist = histogramOfCells(angle,magnitude,cellSize,binSize);
-	
+
 	HOG = getBlockDescriptors(cellHist,blockSize,binSize);
 
 	HOG = normalizeBlockDescriptor(HOG,normType,normThreshold,normE);
-	
+
 	return HOG;
 }
 
@@ -382,21 +384,27 @@ vector3D getHOGFeature(Mat image,int cellSize,int binSize,int blockSize,int norm
 
 vector3D readImage(int argc,char **argv)
 {
-	int cellSize = 8;
+	int cellSize = 6;
 	int binSize = 9;
-	int blockSize = 2;
+	int blockSize = 3;
 	int normType = 0;
 	double normThreshold = 0.2;
 	double normE = 0.0;
 	vector3D HOGimage;
-	Mat image;
-	
-	
-	image = imread(argv[1],CV_LOAD_IMAGE_GRAYSCALE);
-	image.convertTo(image,CV_32F);
-	
-	HOGimage = getHOGFeature(image,cellSize,binSize,blockSize,normType,normThreshold,normE);
+	Mat image,img32;
+
+
+	for(int i = 1; i < argc;i++)
+	{
+		cout<<"\nimage = "<<i<<"\t"<<argv[i];
+		image = imread(argv[i],CV_LOAD_IMAGE_GRAYSCALE);
+		if(image.rows == 0)
+			continue;
+		image.convertTo(img32,CV_32F);
+		HOGimage = getHOGFeature(img32,cellSize,binSize,blockSize,normType,normThreshold,normE);
+		cout<<"\tdone\n\n";
 	//writeHOGFile(HOGimage);
+	}
 	return HOGimage;
 }
 
@@ -418,9 +426,7 @@ int main(int argc,char **argv)
 		cout<<"No input Image";
 		return 0;
 	}
-	
+
 	readImage(argc,argv);
 	return 0;
 }
-
-
