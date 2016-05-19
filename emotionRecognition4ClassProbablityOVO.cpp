@@ -68,11 +68,14 @@ int detectFaceAndCrop(char *imageName)
 	dlib::array< array2d<rgb_pixel> > faces;
 
 	extract_image_chips(img, get_face_chip_details(facialFeatures,500), faces);
-
-	for(int i = 0; i < faces.size();i++,faceNumber++)
+	std::vector<dlib::rectangle> faceCheck;
+	for(int i = 0; i < faces.size();i++)
 	{
 		stringstream s;
-		s<<"face"<<(faceNumber)<<".jpg";
+		faceCheck = detector(faces[i]);
+		if(faceCheck.size() <= 0)
+			continue;
+		s<<"face"<<(faceNumber++)<<".jpg";
 		save_jpeg(faces[i],s.str(),100);
 	}
 
